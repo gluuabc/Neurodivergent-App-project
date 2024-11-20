@@ -35,9 +35,9 @@ class BodyContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return const SingleChildScrollView(
       child: Column(
-        children: const [
+        children: [
           TitleSection(
             name: 'Timer Track',
             input1: 'Work Time',
@@ -87,8 +87,8 @@ class TitleSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextField(
-            decoration: const InputDecoration(
+          const TextField(
+            decoration: InputDecoration(
               hintText: 'Enter work time',
               border: OutlineInputBorder(),
             ),
@@ -102,8 +102,8 @@ class TitleSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextField(
-            decoration: const InputDecoration(
+          const TextField(
+            decoration: InputDecoration(
               hintText: 'Enter break time',
               border: OutlineInputBorder(),
             ),

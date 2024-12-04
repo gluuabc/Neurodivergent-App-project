@@ -8,42 +8,94 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const String appTitle = 'Neurodivergent App';
-    
+
     return MaterialApp(
       title: appTitle,
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color.fromARGB(255, 255, 244, 216), // Set background color for the whole app
+        scaffoldBackgroundColor: const Color.fromARGB(255, 255, 244, 216),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color.fromARGB(255, 76, 111, 104), // Properly set the bottom bar color
+          backgroundColor: Color.fromARGB(255, 76, 111, 104),
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white,
         ),
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text(appTitle),
-        ),
-        body: const BodyContent(),
-        bottomNavigationBar: const CustomBottomBar(),
+      home: const FirstRoute(appTitle: appTitle, name: 'Timer Track'),
+    );
+  }
+}
+
+class FirstRoute extends StatelessWidget {
+  const FirstRoute({super.key, required this.appTitle, required this.name});
+
+  final String appTitle;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(appTitle),
       ),
+      body: BodyContent(appTitle: appTitle, name: name),
+      bottomNavigationBar: const CustomBottomBar(),
+    );
+  }
+}
+
+class SecondRoute extends StatelessWidget {
+  const SecondRoute({super.key, required this.appTitle, required this.name});
+
+  final String appTitle;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(appTitle),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              name, // "Timer Track" displayed as the name
+              style: const TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 76, 111, 104),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Your Timer is Running!',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: const CustomBottomBar(),
     );
   }
 }
 
 class BodyContent extends StatelessWidget {
-  const BodyContent({super.key});
+  const BodyContent({super.key, required this.appTitle, required this.name});
+
+  final String appTitle;
+  final String name;
 
   @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
+    return SingleChildScrollView(
       child: Column(
         children: [
           TitleSection(
-            name: 'Timer Track',
+            name: name,
             input1: 'Work Time',
             input2: 'Break Time',
           ),
-          StartTimerButton(),
+          StartTimerButton(appTitle: appTitle, name: name),
         ],
       ),
     );
@@ -72,7 +124,7 @@ class TitleSection extends StatelessWidget {
           Text(
             name,
             style: const TextStyle(
-              fontSize: 36, // Larger than appTitle
+              fontSize: 36,
               fontWeight: FontWeight.bold,
               color: Color.fromARGB(255, 76, 111, 104),
             ),
@@ -82,7 +134,7 @@ class TitleSection extends StatelessWidget {
           Text(
             input1,
             style: const TextStyle(
-              fontSize: 24, // Larger than default but smaller than name
+              fontSize: 24,
               color: Color.fromARGB(255, 76, 111, 104),
             ),
           ),
@@ -97,7 +149,7 @@ class TitleSection extends StatelessWidget {
           Text(
             input2,
             style: const TextStyle(
-              fontSize: 24, // Larger than default but smaller than name
+              fontSize: 24,
               color: Color.fromARGB(255, 76, 111, 104),
             ),
           ),
@@ -115,7 +167,10 @@ class TitleSection extends StatelessWidget {
 }
 
 class StartTimerButton extends StatelessWidget {
-  const StartTimerButton({super.key});
+  const StartTimerButton({super.key, required this.appTitle, required this.name});
+
+  final String appTitle;
+  final String name;
 
   @override
   Widget build(BuildContext context) {
@@ -123,11 +178,16 @@ class StartTimerButton extends StatelessWidget {
       padding: const EdgeInsets.all(32),
       child: TextButton(
         onPressed: () {
-          // Add your functionality for the button here
-          print('Timer started!');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SecondRoute(appTitle: appTitle, name: name),
+            ),
+          );
         },
         style: TextButton.styleFrom(
-          foregroundColor: Colors.white, backgroundColor: const Color.fromARGB(255, 76, 111, 104),
+          foregroundColor: Colors.white,
+          backgroundColor: const Color.fromARGB(255, 76, 111, 104),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         ),
         child: const Text(
@@ -148,7 +208,7 @@ class CustomBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed, // Ensures all icons are evenly spaced
+      type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.alarm),

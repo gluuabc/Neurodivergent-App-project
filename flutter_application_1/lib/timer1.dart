@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'second.dart';
+import 'timer2.dart';
+import 'bar.dart';
 
 void main() => runApp(const MyApp());
 
@@ -38,7 +39,7 @@ class FirstRoute extends StatelessWidget {
         title: Text(appTitle),
       ),
       body: BodyContent(appTitle: appTitle, name: name),
-      bottomNavigationBar: const CustomBottomBar(),
+      bottomNavigationBar: CustomBottomBar(currentIndex: 0),
     );
   }
 }
@@ -146,7 +147,7 @@ class StartTimerButton extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => SecondRoute(appTitle: appTitle, name: name),
+              builder: (context) => Route2(appTitle: appTitle, name: name),
             ),
           );
         },
@@ -167,35 +168,3 @@ class StartTimerButton extends StatelessWidget {
   }
 }
 
-class CustomBottomBar extends StatelessWidget {
-  const CustomBottomBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.alarm),
-          label: 'Alarm',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_circle_outlined),
-          label: 'Add',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_month_outlined),
-          label: 'Calendar',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings_outlined),
-          label: 'Settings',
-        ),
-      ],
-    );
-  }
-}

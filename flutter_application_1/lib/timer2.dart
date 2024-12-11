@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class SecondRoute extends StatelessWidget {
-  const SecondRoute({super.key, required this.appTitle, required this.name});
+class Route2 extends StatelessWidget {
+  const Route2({super.key, required this.appTitle, required this.name});
 
   final String appTitle;
   final String name;

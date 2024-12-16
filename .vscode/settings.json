@@ -1,3 +1,4 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "cmake.sourceDirectory": "C:/Users/shl08/Documents/GitHub/Neurodivergent-App-project/flutter_application_1/windows"
 }

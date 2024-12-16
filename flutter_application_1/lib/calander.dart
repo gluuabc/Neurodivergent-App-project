@@ -9,9 +9,6 @@ class FourthRoute extends StatelessWidget {
   const FourthRoute({super.key, required this.appTitle});
 
   final String appTitle;
-  
-  
-  
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +22,9 @@ class FourthRoute extends StatelessWidget {
             firstDay: DateTime.utc(2010, 10, 16),
             lastDay: DateTime.utc(2030, 3, 14)), 
            ),
+           bottomNavigationBar: CustomBottomBar(currentIndex: 3),
       );
-      bottomNavigationBar: CustomBottomBar(currentIndex: 3);
+      
   }
 }
 

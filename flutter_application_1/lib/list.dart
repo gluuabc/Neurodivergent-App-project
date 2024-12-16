@@ -8,25 +8,18 @@ class SecondRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color.fromARGB(255, 255, 244, 216),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color.fromARGB(255, 76, 111, 104), // Green bottom bar color
-          selectedItemColor: Colors.white, // Selected button color
-          unselectedItemColor: Colors.white70, // Unselected button color
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(appTitle),
       ),
-      home: ToDoPage(appTitle: appTitle),
+      body: const ToDoPage(),
+      bottomNavigationBar: const CustomBottomBar(currentIndex: 1),
     );
   }
 }
 
 class ToDoPage extends StatefulWidget {
-  final String appTitle;
-
-  const ToDoPage({super.key, required this.appTitle});
+  const ToDoPage({super.key});
 
   @override
   State<ToDoPage> createState() => _ToDoPageState();
@@ -50,14 +43,6 @@ class _ToDoPageState extends State<ToDoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.appTitle, // Use appTitle here
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-      ),
       body: ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
@@ -73,8 +58,7 @@ class _ToDoPageState extends State<ToDoPage> {
         backgroundColor: const Color.fromARGB(255, 76, 111, 104),
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: const CustomBottomBar(currentIndex: 1),
-      backgroundColor: const Color.fromARGB(255, 255, 244, 216), // Ensures background stays yellowish
+      backgroundColor: const Color.fromARGB(255, 255, 244, 216), // Light yellow background
     );
   }
 }

@@ -16,9 +16,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: const Color.fromARGB(255, 255, 244, 216),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color.fromARGB(255, 76, 111, 104),
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white,
+          backgroundColor: const Color.fromARGB(255, 76, 111, 104),
+          selectedItemColor: const Color.fromARGB(255, 255, 244, 216),
+          unselectedItemColor: const Color.fromARGB(255, 255, 244, 216),
         ),
       ),
       home: const FirstRoute(appTitle: appTitle, name: 'Timer Track'),

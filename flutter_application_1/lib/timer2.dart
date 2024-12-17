@@ -13,9 +13,9 @@ class Route2 extends StatefulWidget {
 
   final String appTitle;
   final String name;
-  final int workTime; // in minutes
-  final int breakTime; // in minutes
-
+  final int workTime; 
+  final int breakTime; 
+  
   @override
   State<Route2> createState() => _Route2State();
 }

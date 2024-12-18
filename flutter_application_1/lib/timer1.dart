@@ -17,8 +17,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color.fromARGB(255, 255, 244, 216),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           backgroundColor: Color.fromARGB(255, 76, 111, 104),
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white,
+          selectedItemColor: Color.fromARGB(255, 255, 244, 216),
+          unselectedItemColor: Color.fromARGB(255, 255, 244, 216),
         ),
       ),
       home: const FirstRoute(appTitle: appTitle, name: 'Timer Track'),
@@ -26,44 +26,51 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class FirstRoute extends StatelessWidget {
+class FirstRoute extends StatefulWidget {
   const FirstRoute({super.key, required this.appTitle, required this.name});
 
   final String appTitle;
   final String name;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(appTitle),
-      ),
-      body: BodyContent(appTitle: appTitle, name: name),
-      bottomNavigationBar: CustomBottomBar(currentIndex: 0),
-    );
-  }
+  State<FirstRoute> createState() => _FirstRouteState();
 }
 
+class _FirstRouteState extends State<FirstRoute> {
+  final TextEditingController workTimeController = TextEditingController();
+  final TextEditingController breakTimeController = TextEditingController();
 
-class BodyContent extends StatelessWidget {
-  const BodyContent({super.key, required this.appTitle, required this.name});
-
-  final String appTitle;
-  final String name;
+  @override
+  void dispose() {
+    workTimeController.dispose();
+    breakTimeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          TitleSection(
-            name: name,
-            input1: 'Work Time',
-            input2: 'Break Time',
-          ),
-          StartTimerButton(appTitle: appTitle, name: name),
-        ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.appTitle),
       ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            TitleSection(
+              name: widget.name,
+              workTimeController: workTimeController,
+              breakTimeController: breakTimeController,
+            ),
+            StartTimerButton(
+              appTitle: widget.appTitle,
+              name: widget.name,
+              workTimeController: workTimeController,
+              breakTimeController: breakTimeController,
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: const CustomBottomBar(currentIndex: 0),
     );
   }
 }
@@ -72,13 +79,13 @@ class TitleSection extends StatelessWidget {
   const TitleSection({
     super.key,
     required this.name,
-    required this.input1,
-    required this.input2,
+    required this.workTimeController,
+    required this.breakTimeController,
   });
 
   final String name;
-  final String input1;
-  final String input2;
+  final TextEditingController workTimeController;
+  final TextEditingController breakTimeController;
 
   @override
   Widget build(BuildContext context) {
@@ -97,34 +104,32 @@ class TitleSection extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
-          Text(
-            input1,
-            style: const TextStyle(
-              fontSize: 24,
-              color: Color.fromARGB(255, 76, 111, 104),
-            ),
+          const Text(
+            'Work Time (minutes)',
+            style: TextStyle(fontSize: 24, color: Color.fromARGB(255, 76, 111, 104)),
           ),
           const SizedBox(height: 8),
-          const TextField(
-            decoration: InputDecoration(
+          TextField(
+            controller: workTimeController,
+            decoration: const InputDecoration(
               hintText: 'Enter work time',
               border: OutlineInputBorder(),
             ),
+            keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 20),
-          Text(
-            input2,
-            style: const TextStyle(
-              fontSize: 24,
-              color: Color.fromARGB(255, 76, 111, 104),
-            ),
+          const Text(
+            'Break Time (minutes)',
+            style: TextStyle(fontSize: 24, color: Color.fromARGB(255, 76, 111, 104)),
           ),
           const SizedBox(height: 8),
-          const TextField(
-            decoration: InputDecoration(
+          TextField(
+            controller: breakTimeController,
+            decoration: const InputDecoration(
               hintText: 'Enter break time',
               border: OutlineInputBorder(),
             ),
+            keyboardType: TextInputType.number,
           ),
         ],
       ),
@@ -133,38 +138,49 @@ class TitleSection extends StatelessWidget {
 }
 
 class StartTimerButton extends StatelessWidget {
-  const StartTimerButton({super.key, required this.appTitle, required this.name});
+  const StartTimerButton({
+    super.key,
+    required this.appTitle,
+    required this.name,
+    required this.workTimeController,
+    required this.breakTimeController,
+  });
 
   final String appTitle;
   final String name;
+  final TextEditingController workTimeController;
+  final TextEditingController breakTimeController;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(32),
-      child: TextButton(
+      child: ElevatedButton(
         onPressed: () {
+          final int workTime = int.tryParse(workTimeController.text) ?? 0;
+          final int breakTime = int.tryParse(breakTimeController.text) ?? 0;
+
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => Route2(appTitle: appTitle, name: name),
+              builder: (context) => Route2(
+                appTitle: appTitle,
+                name: name,
+                workTime: workTime,
+                breakTime: breakTime,
+              ),
             ),
           );
         },
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.white,
+        style: ElevatedButton.styleFrom(
           backgroundColor: const Color.fromARGB(255, 76, 111, 104),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         ),
         child: const Text(
           'Start your timer!',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 }
-

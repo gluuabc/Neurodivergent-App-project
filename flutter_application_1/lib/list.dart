@@ -1,44 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'bar.dart';
 
-class SecondRoute extends StatelessWidget {
+class SecondRoute extends StatefulWidget {
   const SecondRoute({super.key, required this.appTitle});
 
   final String appTitle;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(appTitle),
-      ),
-      body: const ToDoPage(),
-      bottomNavigationBar: const CustomBottomBar(currentIndex: 1),
-    );
-  }
+  State<SecondRoute> createState() => _SecondRouteState();
 }
 
-class ToDoPage extends StatefulWidget {
-  const ToDoPage({super.key});
+class _SecondRouteState extends State<SecondRoute> {
+  List<Task> tasks = [];
 
   @override
-  State<ToDoPage> createState() => _ToDoPageState();
-}
+  void initState() {
+    super.initState();
+    loadTasks();
+  }
 
-class _ToDoPageState extends State<ToDoPage> {
-  final List<Task> tasks = []; // Main list of tasks
+  Future<void> loadTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? tasksJson = prefs.getString('tasks');
+    if (tasksJson != null) {
+      final List<dynamic> taskList = json.decode(tasksJson);
+      setState(() {
+        tasks = taskList.map((task) => Task.fromJson(task)).toList();
+      });
+    }
+  }
+
+  Future<void> saveTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String tasksJson = json.encode(tasks.map((task) => task.toJson()).toList());
+    await prefs.setString('tasks', tasksJson);
+  }
 
   void addTask() {
     setState(() {
       tasks.add(Task(name: 'New Task'));
     });
+    saveTasks();
   }
 
   void removeTask(int index) {
     setState(() {
       tasks.removeAt(index);
     });
+    saveTasks();
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.appTitle)),
+      body: ToDoPage(
+        tasks: tasks,
+        onTaskAdded: addTask,
+        onTaskRemoved: removeTask,
+        onUpdate: saveTasks,
+      ),
+      bottomNavigationBar: const CustomBottomBar(currentIndex: 1),
+    );
+  }
+}
+
+class ToDoPage extends StatelessWidget {
+  final List<Task> tasks;
+  final VoidCallback onTaskAdded;
+  final Function(int) onTaskRemoved;
+  final VoidCallback onUpdate;
+
+  const ToDoPage({
+    super.key,
+    required this.tasks,
+    required this.onTaskAdded,
+    required this.onTaskRemoved,
+    required this.onUpdate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -48,17 +89,17 @@ class _ToDoPageState extends State<ToDoPage> {
         itemBuilder: (context, index) {
           return TaskTile(
             task: tasks[index],
-            onUpdate: () => setState(() {}),
-            onRemove: () => removeTask(index),
+            onUpdate: onUpdate,
+            onRemove: () => onTaskRemoved(index),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: addTask,
+        onPressed: onTaskAdded,
         backgroundColor: const Color.fromARGB(255, 76, 111, 104),
         child: const Icon(Icons.add),
       ),
-      backgroundColor: const Color.fromARGB(255, 255, 244, 216), 
+      backgroundColor: const Color.fromARGB(255, 255, 244, 216),
     );
   }
 }
@@ -140,9 +181,7 @@ class _TaskTileState extends State<TaskTile> {
                 ? TextField(
                     controller: renameController,
                     onSubmitted: (_) => saveRename(),
-                    decoration: const InputDecoration(
-                      hintText: 'Rename Task',
-                    ),
+                    decoration: const InputDecoration(hintText: 'Rename Task'),
                   )
                 : Text(
                     widget.task.name,
@@ -216,6 +255,19 @@ class Task {
   List<Subtask> subtasks;
 
   Task({required this.name, this.isChecked = false}) : subtasks = [];
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'isChecked': isChecked,
+        'subtasks': subtasks.map((s) => s.toJson()).toList(),
+      };
+
+  factory Task.fromJson(Map<String, dynamic> json) => Task(
+        name: json['name'],
+        isChecked: json['isChecked'],
+      )..subtasks = (json['subtasks'] as List)
+          .map((s) => Subtask.fromJson(s))
+          .toList();
 }
 
 class Subtask {
@@ -223,4 +275,14 @@ class Subtask {
   bool isChecked;
 
   Subtask({required this.name, this.isChecked = false});
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'isChecked': isChecked,
+      };
+
+  factory Subtask.fromJson(Map<String, dynamic> json) => Subtask(
+        name: json['name'],
+        isChecked: json['isChecked'],
+      );
 }

@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'bar.dart';
 
-void main() => runApp(const MyApp());
+class SecondRoute extends StatefulWidget {
+  const SecondRoute({super.key, required this.appTitle});
 
-/// Simple demo app
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String appTitle;
+
+  @override
+  State<SecondRoute> createState() => _SecondRouteState();
+}
+
+class _SecondRouteState extends State<SecondRoute> {
+  List<Task> tasks = [];
 
   @override
   Widget build(BuildContext context) {

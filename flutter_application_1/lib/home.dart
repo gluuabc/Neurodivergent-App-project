@@ -119,7 +119,7 @@ class ThirdRoute extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: CustomBottomBar(currentIndex: 2),
+      bottomNavigationBar: const CustomBottomBar(currentIndex: 2),
     );
   }
 }

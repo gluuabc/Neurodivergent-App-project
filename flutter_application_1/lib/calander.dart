@@ -22,7 +22,7 @@ class FourthRoute extends StatelessWidget {
             firstDay: DateTime.utc(2010, 10, 16),
             lastDay: DateTime.utc(2030, 3, 14)), 
            ),
-           bottomNavigationBar: CustomBottomBar(currentIndex: 3),
+           bottomNavigationBar: const CustomBottomBar(currentIndex: 3),
       );
       
   }
@@ -35,7 +35,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Weclcome")),
+      appBar: AppBar(title: const Text("Weclcome")),
       body: content(),
     );
   }
@@ -43,7 +43,7 @@ class _MyAppState extends State<MyApp> {
   Widget content() {
     return Column(
       children: [
-       Text("123"),
+       const Text("123"),
        Container(
         child: TableCalendar(
             focusedDay: today,
@@ -56,6 +56,8 @@ class _MyAppState extends State<MyApp> {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
   State<MyApp> createState() => _MyAppState();
 }

@@ -14,74 +14,97 @@ class SecondRoute extends StatefulWidget {
 
 class _SecondRouteState extends State<SecondRoute> {
   List<Task> tasks = [];
+  int _currentIndex = 1;  // Set initial index for this screen
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const ToDoPage(),
-    );
+  void initState() {
+    super.initState();
+    loadTasks();
   }
-}
 
-/// Main To-Do Page
-class ToDoPage extends StatefulWidget {
-  const ToDoPage({super.key});
+  Future<void> loadTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? tasksJson = prefs.getString('tasks');
+    if (tasksJson != null) {
+      final List<dynamic> taskList = json.decode(tasksJson);
+      setState(() {
+        tasks = taskList.map((task) => Task.fromJson(task)).toList();
+      });
+    }
+  }
 
-  @override
-  State<ToDoPage> createState() => _ToDoPageState();
-}
+  Future<void> saveTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String tasksJson = json.encode(tasks.map((task) => task.toJson()).toList());
+    await prefs.setString('tasks', tasksJson);
+  }
 
-class _ToDoPageState extends State<ToDoPage> {
-  final List<Task> tasks = [];
-
-  /// Add a new Task to the list
   void addTask() {
     setState(() {
       tasks.add(Task(name: 'New Task'));
     });
+    saveTasks();
   }
 
-  /// Remove a Task from the list
   void removeTask(int index) {
     setState(() {
       tasks.removeAt(index);
     });
+    saveTasks();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'To-Do List',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 76, 111, 104),
+      appBar: AppBar(title: Text(widget.appTitle)),
+      body: ToDoPage(
+        tasks: tasks,
+        onTaskAdded: addTask,
+        onTaskRemoved: removeTask,
+        onUpdate: saveTasks,
       ),
+      bottomNavigationBar: CustomBottomBar(currentIndex: _currentIndex),  // Pass the current index here
+    );
+  }
+}
+
+class ToDoPage extends StatelessWidget {
+  final List<Task> tasks;
+  final VoidCallback onTaskAdded;
+  final Function(int) onTaskRemoved;
+  final VoidCallback onUpdate;
+
+  const ToDoPage({
+    super.key,
+    required this.tasks,
+    required this.onTaskAdded,
+    required this.onTaskRemoved,
+    required this.onUpdate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
       body: ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
           return TaskTile(
             task: tasks[index],
-            onUpdate: () => setState(() {}),
-            onRemove: () => removeTask(index),
+            onUpdate: onUpdate,
+            onRemove: () => onTaskRemoved(index),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: addTask,
+        onPressed: onTaskAdded,
         backgroundColor: const Color.fromARGB(255, 76, 111, 104),
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: const CustomBottomBar(),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromARGB(255, 255, 244, 216),
     );
   }
 }
 
-/// Individual Task Tile
 class TaskTile extends StatefulWidget {
   final Task task;
   final VoidCallback onUpdate;
@@ -99,17 +122,10 @@ class TaskTile extends StatefulWidget {
 }
 
 class _TaskTileState extends State<TaskTile> {
-  bool isExpanded = false; // Expand or collapse subtasks
-  bool isRenaming = false; // Toggle renaming state
+  bool isExpanded = false;
+  bool isRenaming = false;
   final TextEditingController renameController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    renameController.text = widget.task.name;
-  }
-
-  /// Begin renaming the task
   void renameTask() {
     setState(() {
       isRenaming = true;
@@ -117,7 +133,6 @@ class _TaskTileState extends State<TaskTile> {
     });
   }
 
-  /// Save the renamed task
   void saveRename() {
     setState(() {
       widget.task.name = renameController.text;
@@ -126,7 +141,6 @@ class _TaskTileState extends State<TaskTile> {
     widget.onUpdate();
   }
 
-  /// Add a new Subtask
   void addSubtask() {
     setState(() {
       widget.task.subtasks.add(Subtask(name: 'New Subtask'));
@@ -134,7 +148,6 @@ class _TaskTileState extends State<TaskTile> {
     widget.onUpdate();
   }
 
-  /// Remove a Subtask
   void deleteSubtask(int index) {
     setState(() {
       widget.task.subtasks.removeAt(index);
@@ -142,51 +155,29 @@ class _TaskTileState extends State<TaskTile> {
     widget.onUpdate();
   }
 
-  /// Toggle expansion
-  void toggleExpanded() {
+  void toggleSubtask(int index) {
     setState(() {
-      isExpanded = !isExpanded;
-    });
-  }
-
-  /// Pick a due date/time for the **entire Task**
-  Future<void> pickTaskDueDate() async {
-    // 1) Pick a date
-    final date = await showDatePicker(
-      context: context,
-      initialDate: widget.task.dueDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (date == null) return;
-
-    // 2) Pick a time
-    final timeOfDay = await showTimePicker(
-      context: context,
-      initialTime:
-          TimeOfDay.fromDateTime(widget.task.dueDate ?? DateTime.now()),
-    );
-    if (timeOfDay == null) return;
-
-    // Combine into a DateTime
-    final newDueDate = DateTime(
-        date.year, date.month, date.day, timeOfDay.hour, timeOfDay.minute);
-
-    setState(() {
-      widget.task.dueDate = newDueDate;
+      widget.task.subtasks[index].isChecked = !widget.task.subtasks[index].isChecked;
     });
     widget.onUpdate();
   }
 
   @override
   Widget build(BuildContext context) {
-    final task = widget.task;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Column(
         children: [
-          // Main Task Row
           ListTile(
+            leading: Checkbox(
+              value: widget.task.isChecked,
+              onChanged: (value) {
+                setState(() {
+                  widget.task.isChecked = value ?? false;
+                });
+                widget.onUpdate();
+              },
+            ),
             title: isRenaming
                 ? TextField(
                     controller: renameController,
@@ -194,53 +185,17 @@ class _TaskTileState extends State<TaskTile> {
                     decoration: const InputDecoration(hintText: 'Rename Task'),
                   )
                 : Text(
-                    task.name,
+                    widget.task.name,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      decoration: task.status == TaskStatus.finished
+                      decoration: widget.task.isChecked
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,
                     ),
                   ),
-            subtitle: task.dueDate == null
-                ? null
-                : Text(
-                    'Due: ${task.dueDate}',
-                    style: const TextStyle(fontSize: 12),
-                  ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Dropdown for Task Status with custom colored items
-                DropdownButton<TaskStatus>(
-                  value: task.status,
-                  onChanged: (newStatus) {
-                    if (newStatus == null) return;
-                    setState(() {
-                      task.status = newStatus;
-                    });
-                    widget.onUpdate();
-                  },
-                  items: TaskStatus.values.map((status) {
-                    return DropdownMenuItem(
-                      value: status,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: getStatusColor(status),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          status.name,
-                          style: TextStyle(color: getStatusTextColor(status)),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(width: 8),
-                // Rename / Save button
                 if (isRenaming)
                   IconButton(
                     icon: const Icon(Icons.check, color: Colors.green),
@@ -251,7 +206,6 @@ class _TaskTileState extends State<TaskTile> {
                     icon: const Icon(Icons.edit, color: Colors.blue),
                     onPressed: renameTask,
                   ),
-                // Delete Task button
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: widget.onRemove,
@@ -259,34 +213,22 @@ class _TaskTileState extends State<TaskTile> {
               ],
             ),
           ),
-          // Row for picking a due date/time
-          if (!isRenaming)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: pickTaskDueDate,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-                    ),
-                    icon: const Icon(Icons.calendar_month, color: Colors.white),
-                    label: const Text('Pick Due Date',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-            ),
-          // Subtasks Section
           if (isExpanded)
             Column(
               children: [
-                for (int i = 0; i < task.subtasks.length; i++)
-                  SubtaskTile(
-                    subtask: task.subtasks[i],
-                    onUpdate: widget.onUpdate,
-                    onDelete: () => deleteSubtask(i),
-                  ),
+                ...List.generate(widget.task.subtasks.length, (index) {
+                  return ListTile(
+                    leading: Checkbox(
+                      value: widget.task.subtasks[index].isChecked,
+                      onChanged: (_) => toggleSubtask(index),
+                    ),
+                    title: Text(widget.task.subtasks[index].name),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => deleteSubtask(index),
+                    ),
+                  );
+                }),
                 TextButton.icon(
                   onPressed: addSubtask,
                   icon: const Icon(Icons.add),
@@ -294,9 +236,12 @@ class _TaskTileState extends State<TaskTile> {
                 ),
               ],
             ),
-          // Expand / Collapse button
           TextButton(
-            onPressed: toggleExpanded,
+            onPressed: () {
+              setState(() {
+                isExpanded = !isExpanded;
+              });
+            },
             child: Text(isExpanded ? 'Collapse' : 'Expand'),
           ),
         ],
@@ -305,269 +250,40 @@ class _TaskTileState extends State<TaskTile> {
   }
 }
 
-/// Subtask tile extracted to reduce complexity
-class SubtaskTile extends StatefulWidget {
-  final Subtask subtask;
-  final VoidCallback onUpdate;
-  final VoidCallback onDelete;
-
-  const SubtaskTile({
-    super.key,
-    required this.subtask,
-    required this.onUpdate,
-    required this.onDelete,
-  });
-
-  @override
-  State<SubtaskTile> createState() => _SubtaskTileState();
-}
-
-class _SubtaskTileState extends State<SubtaskTile> {
-  final TextEditingController subtaskController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    subtaskController.text = widget.subtask.name;
-  }
-
-  /// Start renaming the subtask
-  void renameSubtask() {
-    setState(() {
-      widget.subtask.isRenaming = true;
-      subtaskController.text = widget.subtask.name;
-    });
-  }
-
-  /// Save the subtask rename
-  void saveSubtaskRename() {
-    setState(() {
-      widget.subtask.name = subtaskController.text;
-      widget.subtask.isRenaming = false;
-    });
-    widget.onUpdate();
-  }
-
-  /// Pick a due date/time for this Subtask
-  Future<void> pickSubtaskDueDate() async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: widget.subtask.dueDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (date == null) return;
-
-    final timeOfDay = await showTimePicker(
-      context: context,
-      initialTime:
-          TimeOfDay.fromDateTime(widget.subtask.dueDate ?? DateTime.now()),
-    );
-    if (timeOfDay == null) return;
-
-    final newDueDate = DateTime(
-        date.year, date.month, date.day, timeOfDay.hour, timeOfDay.minute);
-
-    setState(() {
-      widget.subtask.dueDate = newDueDate;
-    });
-    widget.onUpdate();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final subtask = widget.subtask;
-    return ListTile(
-      // Dropdown for subtask status with custom colors
-      leading: DropdownButton<TaskStatus>(
-        value: subtask.status,
-        onChanged: (newStatus) {
-          if (newStatus == null) return;
-          setState(() {
-            subtask.status = newStatus;
-          });
-          widget.onUpdate();
-        },
-        items: TaskStatus.values.map((status) {
-          return DropdownMenuItem(
-            value: status,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: getStatusColor(status),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                status.name,
-                style:
-                    TextStyle(color: getStatusTextColor(status), fontSize: 12),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-      title: subtask.isRenaming
-          ? TextField(
-              controller: subtaskController,
-              onSubmitted: (_) => saveSubtaskRename(),
-              decoration: const InputDecoration(hintText: 'Edit Subtask'),
-            )
-          : Text(
-              subtask.name,
-              style: TextStyle(
-                decoration: subtask.status == TaskStatus.finished
-                    ? TextDecoration.lineThrough
-                    : TextDecoration.none,
-              ),
-            ),
-      subtitle: subtask.dueDate == null
-          ? null
-          : Text(
-              'Due: ${subtask.dueDate}',
-              style: const TextStyle(fontSize: 12),
-            ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (subtask.isRenaming)
-            IconButton(
-              icon: const Icon(Icons.check, color: Colors.green),
-              onPressed: saveSubtaskRename,
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: renameSubtask,
-            ),
-          // Calendar option for subtask with updated styling
-          Container(
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 76, 111, 104),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.calendar_today, color: Colors.white),
-              onPressed: pickSubtaskDueDate,
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: widget.onDelete,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-//
-// -------------- Data Models: Task, Subtask, & Status --------------
-//
-
-/// Possible statuses for a task or subtask
-enum TaskStatus { unstarted, inProgress, finished }
-
-extension TaskStatusName on TaskStatus {
-  String get name {
-    switch (this) {
-      case TaskStatus.unstarted:
-        return 'Unstarted';
-      case TaskStatus.inProgress:
-        return 'In Progress';
-      case TaskStatus.finished:
-        return 'Finished';
-    }
-  }
-}
-
-/// Returns the background color for a given status.
-Color getStatusColor(TaskStatus status) {
-  switch (status) {
-    case TaskStatus.unstarted:
-      return Colors.grey;
-    case TaskStatus.inProgress:
-      return Colors.yellow;
-    case TaskStatus.finished:
-      return Colors.green;
-  }
-}
-
-/// Returns the text color for a given status.
-Color getStatusTextColor(TaskStatus status) {
-  switch (status) {
-    case TaskStatus.unstarted:
-      return Colors.white;
-    case TaskStatus.inProgress:
-      return Colors.black;
-    case TaskStatus.finished:
-      return Colors.white;
-  }
-}
-
-/// A main Task object
 class Task {
   String name;
-  TaskStatus status;
-  DateTime? dueDate; // optional due date/time
-  bool isRenaming;
+  bool isChecked;
   List<Subtask> subtasks;
 
-  Task({
-    required this.name,
-    this.status = TaskStatus.unstarted,
-    this.dueDate,
-  })  : isRenaming = false,
-        subtasks = [];
+  Task({required this.name, this.isChecked = false}) : subtasks = [];
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'isChecked': isChecked,
+        'subtasks': subtasks.map((s) => s.toJson()).toList(),
+      };
+
+  factory Task.fromJson(Map<String, dynamic> json) => Task(
+        name: json['name'],
+        isChecked: json['isChecked'],
+      )..subtasks = (json['subtasks'] as List)
+          .map((s) => Subtask.fromJson(s))
+          .toList();
 }
 
-/// A Subtask object
 class Subtask {
   String name;
-  TaskStatus status;
-  DateTime? dueDate; // optional due date/time
-  bool isRenaming;
+  bool isChecked;
 
-  Subtask({
-    required this.name,
-    this.status = TaskStatus.unstarted,
-    this.dueDate,
-    this.isRenaming = false,
-  });
-}
+  Subtask({required this.name, this.isChecked = false});
 
-/// Custom bottom bar from your original code
-class CustomBottomBar extends StatelessWidget {
-  const CustomBottomBar({super.key});
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'isChecked': isChecked,
+      };
 
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.grey,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.alarm),
-          label: 'Alarm',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_circle_outlined),
-          label: 'Add',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_month_outlined),
-          label: 'Calendar',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings_outlined),
-          label: 'Settings',
-        ),
-      ],
-    );
-  }
+  factory Subtask.fromJson(Map<String, dynamic> json) => Subtask(
+        name: json['name'],
+        isChecked: json['isChecked'],
+      );
 }

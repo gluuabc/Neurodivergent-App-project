@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'bar.dart';
+
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
@@ -7,9 +9,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const SettingsPage(),
+      home: SettingsPage(),
     );
   }
 }
@@ -265,11 +267,11 @@ class _SettingsPageState extends State<SettingsPage> {
             Row(
               children: [
                 // Days of the week
-                Expanded(
+                const Expanded(
                   child: Wrap(
                     spacing: 6,
                     runSpacing: 6,
-                    children: const [
+                    children: [
                       Chip(label: Text('S')),
                       Chip(label: Text('M')),
                       Chip(label: Text('T')),
@@ -430,30 +432,30 @@ class _SettingsPageState extends State<SettingsPage> {
           color: _textColor,
           fontStyle: _useOpenDyslexic ? FontStyle.italic : FontStyle.normal,
         ),
-        child: Column(
+        child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Help',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             // Frequently asked questions
-            const Text(
+            Text(
               'Frequently asked questions',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 8),
-            const Text('Q: Question\nA: Answer\nKeep writing idk'),
-            const Divider(height: 32),
+            SizedBox(height: 8),
+            Text('Q: Question\nA: Answer\nKeep writing idk'),
+            Divider(height: 32),
 
             // Help center
-            const Text(
+            Text(
               'Help center',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 8),
-            const Text('Phone number: .......\nEmail: ......@....'),
+            SizedBox(height: 8),
+            Text('Phone number: .......\nEmail: ......@....'),
           ],
         ),
       ),
@@ -523,7 +525,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
-      bottomNavigationBar: const CustomBottomBar(),
+      bottomNavigationBar: const CustomBottomBar(currentIndex: null,),
       backgroundColor: Colors.white,
     );
   }
@@ -537,11 +539,11 @@ class _SidebarButton extends StatelessWidget {
   final VoidCallback onTap;
 
   const _SidebarButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.isSelected,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -569,38 +571,3 @@ class _SidebarButton extends StatelessWidget {
   }
 }
 
-class CustomBottomBar extends StatelessWidget {
-  const CustomBottomBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.grey[400],
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.alarm),
-          label: 'Alarm',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_circle_outlined),
-          label: 'Add',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_month_outlined),
-          label: 'Calendar',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings_outlined),
-          label: 'Settings',
-        ),
-      ],
-    );
-  }
-}

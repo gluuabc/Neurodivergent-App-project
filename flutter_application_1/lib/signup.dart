@@ -34,9 +34,9 @@ class BodyContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return const SingleChildScrollView(
       child: Column(
-        children: const [
+        children: [
           TitleSection(
             name: 'Sign Up',
             input1: 'Email',
@@ -89,8 +89,8 @@ class TitleSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextField(
-            decoration: const InputDecoration(
+          const TextField(
+            decoration: InputDecoration(
               hintText: 'Enter email here',
               border: OutlineInputBorder(),
             ),
@@ -104,8 +104,8 @@ class TitleSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextField(
-            decoration: const InputDecoration(
+          const TextField(
+            decoration: InputDecoration(
               hintText: 'Enter username here',
               border: OutlineInputBorder(),
             ),
@@ -119,9 +119,9 @@ class TitleSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextField(
+          const TextField(
             obscureText: true,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Enter password here',
               border: OutlineInputBorder(),
             ),

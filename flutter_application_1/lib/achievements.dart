@@ -10,10 +10,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Achievements Page',
       debugShowCheckedModeBanner: false,
-      home: const AchievementsPage(),
+      home: AchievementsPage(),
     );
   }
 }

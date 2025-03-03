@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'bar.dart';
 
 class FifthRoute extends StatelessWidget {
@@ -13,12 +14,9 @@ class FifthRoute extends StatelessWidget {
         title: Text(appTitle),
       ),
       body: const Center(
-        child: Text(
-          'SETTING',
-          style: TextStyle(fontSize: 24),
-        ),
+        child: SettingsPage(),
       ),
-      bottomNavigationBar: const CustomBottomBar(currentIndex: 4),
+    bottomNavigationBar: const CustomBottomBar(currentIndex: 4),
     );
   }
 }
@@ -42,10 +40,24 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _overdueTasks = false;
   String _pomodoroSound = 'Radar (Default)';
 
-  void _onItemTapped(int index) {
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  void _loadSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _selectedIndex = index;
+      _selectedColorScheme = prefs.getInt('colorScheme') ?? 0;
+      _useOpenDyslexic = prefs.getBool('useOpenDyslexic') ?? false;
+      _fontSize = prefs.getDouble('fontSize') ?? 16.0;
+      _dailyNotifications = prefs.getBool('dailyNotifications') ?? true;
+      _upcomingTasks = prefs.getBool('upcomingTasks') ?? true;
+      _overdueTasks = prefs.getBool('overdueTasks') ?? false;
+      _pomodoroSound = prefs.getString('pomodoroSound') ?? 'Radar (Default)';
     });
+    _applyColorScheme();
   }
 
   void _applyColorScheme() {
@@ -72,259 +84,175 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildAppearanceSubpage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: DefaultTextStyle(
-        style: TextStyle(
-          fontSize: _fontSize,
-          color: _textColor,
-          fontStyle: _useOpenDyslexic ? FontStyle.italic : FontStyle.normal,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Appearance',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Color Scheme',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedColorScheme = 0;
-                    });
-                    _applyColorScheme();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Low Contrast'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedColorScheme = 1;
-                    });
-                    _applyColorScheme();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('High Contrast'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedColorScheme = 2;
-                    });
-                    _applyColorScheme();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Dark Mode'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedColorScheme = 3;
-                    });
-                    _applyColorScheme();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Customize'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Font Style',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _useOpenDyslexic = false;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Default'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _useOpenDyslexic = true;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('OpenDyslexic'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Font Size',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            Slider(
-              value: _fontSize,
-              min: 9,
-              max: 30,
-              divisions: 9,
-              label: '${_fontSize.round()}',
-              onChanged: (value) {
-                setState(() {
-                  _fontSize = value;
-                });
-              },
-            ),
-          ],
-        ),
+    return _buildSettingsContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Appearance'),
+          _buildSubTitle('Color Scheme'),
+          _buildColorSchemeButtons(),
+          _buildSubTitle('Font Style'),
+          _buildFontStyleButtons(),
+          _buildSubTitle('Font Size'),
+          _buildFontSizeSlider(),
+        ],
       ),
     );
   }
 
+  Widget _buildColorSchemeButtons() {
+    final schemes = ['Low Contrast', 'High Contrast', 'Dark Mode', 'Customize'];
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: List.generate(schemes.length, (index) {
+        return ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _selectedColorScheme = index;
+            });
+            _applyColorScheme();
+          },
+          style: _buttonStyle,
+          child: Text(schemes[index]),
+        );
+      }),
+    );
+  }
+
+  Widget _buildFontStyleButtons() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _useOpenDyslexic = false;
+            });
+          },
+          style: _buttonStyle,
+          child: const Text('Default'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _useOpenDyslexic = true;
+            });
+          },
+          style: _buttonStyle,
+          child: const Text('OpenDyslexic'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFontSizeSlider() {
+    return Slider(
+      value: _fontSize,
+      min: 9,
+      max: 30,
+      divisions: 9,
+      label: '${_fontSize.round()}',
+      onChanged: (value) {
+        setState(() {
+          _fontSize = value;
+        });
+      },
+    );
+  }
+
   Widget _buildNotificationsSubpage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: DefaultTextStyle(
-        style: TextStyle(
-          fontSize: _fontSize,
-          color: _textColor,
-          fontStyle: _useOpenDyslexic ? FontStyle.italic : FontStyle.normal,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Notifications',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              title: const Text('Daily Notifications'),
-              value: _dailyNotifications,
-              onChanged: (bool value) {
-                setState(() {
-                  _dailyNotifications = value;
-                });
-              },
-            ),
-            const Divider(height: 32),
-            SwitchListTile(
-              title: const Text('Upcoming Tasks'),
-              value: _upcomingTasks,
-              onChanged: (bool value) {
-                setState(() {
-                  _upcomingTasks = value;
-                });
-              },
-            ),
-            SwitchListTile(
-              title: const Text('Overdue Tasks'),
-              value: _overdueTasks,
-              onChanged: (bool value) {
-                setState(() {
-                  _overdueTasks = value;
-                });
-              },
-            ),
-            const Divider(height: 32),
-            const Text(
-              'Pomodoro Timer',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            DropdownButton<String>(
-              value: _pomodoroSound,
-              items: const [
-                DropdownMenuItem(value: 'Radar (Default)', child: Text('Radar (Default)')),
-                DropdownMenuItem(value: 'Bulletin', child: Text('Bulletin')),
-                DropdownMenuItem(value: 'Chime', child: Text('Chime')),
-                DropdownMenuItem(value: 'Sencha', child: Text('Sencha')),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _pomodoroSound = value ?? 'Radar (Default)';
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+    return _buildSettingsContainer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Notifications'),
+          _buildSwitch('Daily Notifications', _dailyNotifications, (value) {
+            setState(() => _dailyNotifications = value);
+          }),
+          _buildSwitch('Upcoming Tasks', _upcomingTasks, (value) {
+            setState(() => _upcomingTasks = value);
+          }),
+          _buildSwitch('Overdue Tasks', _overdueTasks, (value) {
+            setState(() => _overdueTasks = value);
+          }),
+        ],
       ),
     );
   }
 
   Widget _buildHelpSubpage() {
+    return _buildSettingsContainer(
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Help', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          SizedBox(height: 16),
+          Text('Q: Question\nA: Answer'),
+          Divider(height: 32),
+          Text('Phone number: .......\nEmail: ......@....'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsContainer({required Widget child}) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: DefaultTextStyle(
         style: TextStyle(
           fontSize: _fontSize,
           color: _textColor,
-          fontStyle: _useOpenDyslexic ? FontStyle.italic : FontStyle.normal,
+          fontFamily: _useOpenDyslexic ? 'OpenDyslexic' : null,
         ),
-        child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Help',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            Text('Q: Question\nA: Answer\nKeep writing idk'),
-            Divider(height: 32),
-            Text('Phone number: .......\nEmail: ......@....'),
-          ],
-        ),
+        child: child,
       ),
     );
   }
+
+  Widget _buildSwitch(String title, bool value, Function(bool) onChanged) {
+    return SwitchListTile(
+      title: Text(title),
+      value: value,
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold));
+  }
+
+  Widget _buildSubTitle(String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+      child: Text(subtitle, style: const TextStyle(fontWeight: FontWeight.w600)),
+    );
+  }
+
+  final ButtonStyle _buttonStyle = ElevatedButton.styleFrom(
+    backgroundColor: const Color.fromARGB(255, 76, 111, 104),
+    foregroundColor: Colors.white,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final subpages = [
-      _buildAppearanceSubpage(),
-      _buildNotificationsSubpage(),
-      _buildHelpSubpage(),
-    ];
-
+    final subpages = [_buildAppearanceSubpage(), _buildNotificationsSubpage(), _buildHelpSubpage()];
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings', style: TextStyle(fontWeight: FontWeight.w600)),
-      ),
       body: subpages[_selectedIndex],
-      bottomNavigationBar: CustomBottomBar(currentIndex: _selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.color_lens), label: 'Appearance'),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifications'),
+          BottomNavigationBarItem(icon: Icon(Icons.help), label: 'Help'),
+        ],
+      ),
     );
   }
 }
-
-
-

@@ -1,22 +1,8 @@
 import 'package:flutter/material.dart';
+import 'home.dart';
 
-void main() {
-  runApp(const MyApp());
-}
 
 /// Root widget.
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Achievements Page',
-      debugShowCheckedModeBanner: false,
-      home: AchievementsPage(),
-    );
-  }
-}
 
 /// Enum for task statuses.
 enum TaskStatus { unfinished, inProgress, finished }
@@ -66,14 +52,11 @@ extension TimeRangeLabel on TimeRange {
 }
 
 /// Achievements page with interactive task controls and a custom-drawn line graph.
-class AchievementsPage extends StatefulWidget {
-  const AchievementsPage({super.key});
-
-  @override
-  State<AchievementsPage> createState() => _AchievementsPageState();
+class Route3 extends StatefulWidget {
+  State<Route3> createState() => _Route3State();
 }
 
-class _AchievementsPageState extends State<AchievementsPage> {
+class _Route3State extends State<Route3> {
   // In-memory list of tasks.
   final List<Task> _tasks = [];
 
@@ -323,7 +306,7 @@ class _AchievementsPageState extends State<AchievementsPage> {
           ],
         ),
       ),
-      bottomNavigationBar: const CustomBottomBar(),
+      
     );
   }
 }
@@ -427,39 +410,3 @@ class _LineChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-/// Simple bottom navigation bar.
-class CustomBottomBar extends StatelessWidget {
-  const CustomBottomBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.grey[400],
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.alarm),
-          label: 'Alarm',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_circle_outlined),
-          label: 'Add',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_month_outlined),
-          label: 'Calendar',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings_outlined),
-          label: 'Settings',
-        ),
-      ],
-    );
-  }
-}

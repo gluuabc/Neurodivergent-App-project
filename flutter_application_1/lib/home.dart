@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'bar.dart';
+import 'achievements.dart';
 
 class ThirdRoute extends StatelessWidget {
   const ThirdRoute({super.key, required this.appTitle});
@@ -12,7 +13,6 @@ class ThirdRoute extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           appTitle,
-          style: const TextStyle(fontSize: 28), // Larger title
         ),
       ),
       body: Padding(
@@ -105,12 +105,20 @@ class ThirdRoute extends StatelessWidget {
                     ),
                     const SizedBox(height: 30),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {         Navigator.push(
+           context,
+           MaterialPageRoute(
+             builder: (context) => Route3(
+                             
+             ),
+           ),
+         );
+},
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40), // Bigger button
                         textStyle: const TextStyle(fontSize: 24), // Bigger text
                       ),
-                      child: const Text('Adjust weekly goal'),
+                      child: const Text('Achievement Page'),
                     ),
                   ],
                 ),

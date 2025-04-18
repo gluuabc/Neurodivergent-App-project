@@ -7,9 +7,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_application_1/timer1.dart';
 
 void main() {
@@ -68,8 +65,6 @@ void main() {
 
     // Verify that our counter has reset to 0.
     expect(find.text('0'), findsOneWidget);
-  });
-}
 
     // Verify that our counter has incremented.
     expect(find.text('0'), findsNothing);

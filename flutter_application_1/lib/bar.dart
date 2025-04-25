@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'setting.dart';
 import 'timer1.dart';
 import 'home.dart';
-import 'calander.dart';
+import 'calendar.dart';
 import 'list.dart';
 
 class CustomBottomBar extends StatelessWidget {

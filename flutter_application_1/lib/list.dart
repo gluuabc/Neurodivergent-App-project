@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'bar.dart';
 
 class SecondRoute extends StatefulWidget {
@@ -496,6 +494,23 @@ class Task {
     this.dueDate,
   })  : isRenaming = false,
         subtasks = [];
+  
+  factory Task.fromJson(Map<String, dynamic> json) => Task(
+        name: json['name'],
+        dueDate:
+            json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
+        status: TaskStatus.values[json['status']],
+        subtasks: (json['subtasks'] as List<dynamic>)
+            .map((e) => Subtask.fromJson(e))
+            .toList(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'dueDate': dueDate?.toIso8601String(),
+        'status': status.index,
+        'subtasks': subtasks.map((e) => e.toJson()).toList(),
+      };
 }
 
 /// A Subtask object
@@ -511,4 +526,19 @@ class Subtask {
     this.dueDate,
     this.isRenaming = false,
   });
+
+  factory Subtask.fromJson(Map<String, dynamic> json) => Subtask(
+        name: json['name'],
+        dueDate:
+            json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
+        status: TaskStatus.values[json['status']],
+        isRenaming: json['isRenaming'] ?? false,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'dueDate': dueDate?.toIso8601String(),
+        'status': status.index,
+        'isRenaming': isRenaming,
+      };
 }

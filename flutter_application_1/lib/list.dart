@@ -492,8 +492,8 @@ class Task {
     required this.name,
     this.status = TaskStatus.unstarted,
     this.dueDate,
-  })  : isRenaming = false,
-        subtasks = [];
+    this.subtasks = const [],
+  })  : isRenaming = false;
   
   factory Task.fromJson(Map<String, dynamic> json) => Task(
         name: json['name'],

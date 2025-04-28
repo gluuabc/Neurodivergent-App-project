@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'bar.dart';
+import 'package:provider/provider.dart';
+import 'task_provider.dart';
 
 class SecondRoute extends StatefulWidget {
   const SecondRoute({super.key, required this.appTitle});
@@ -29,6 +31,8 @@ class _SecondRouteState extends State<SecondRoute> {
 
   @override
   Widget build(BuildContext context) {
+    final tasks = context.read<TaskProvider>().tasks;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(

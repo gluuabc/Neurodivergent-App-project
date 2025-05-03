@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'bar.dart';
+import 'dart:convert';
 
 class SecondRoute extends StatefulWidget {
   const SecondRoute({super.key, required this.appTitle});
@@ -11,13 +13,37 @@ class SecondRoute extends StatefulWidget {
 }
 
 class _SecondRouteState extends State<SecondRoute> {
-  final List<Task> tasks = [];
+  List<Task> tasks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadTasks();
+  }
+
+  Future<void> loadTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final tasksString = prefs.getString('task_list');
+    if (tasksString != null) {
+      final List<dynamic> decoded = json.decode(tasksString);
+      setState(() {
+        tasks = decoded.map((e) => Task.fromJson(e)).toList();
+      });
+    }
+  }
+
+  Future<void> saveTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = json.encode(tasks.map((e) => e.toJson()).toList());
+    await prefs.setString('task_list', encoded);
+  }
 
   /// Add a new Task to the list
   void addTask() {
     setState(() {
-      tasks.add(Task(name: 'New Task'));
+      tasks.add(Task(name: 'New Task', subtasks: []));
     });
+    saveTasks();
   }
 
   /// Remove a Task from the list
@@ -25,6 +51,7 @@ class _SecondRouteState extends State<SecondRoute> {
     setState(() {
       tasks.removeAt(index);
     });
+    saveTasks();
   }
 
   @override
@@ -37,13 +64,16 @@ class _SecondRouteState extends State<SecondRoute> {
       ),
       body: ListView.builder(
         itemCount: tasks.length,
-        itemBuilder: (context, index) {
-          return TaskTile(
-            task: tasks[index],
-            onUpdate: () => setState(() {}),
-            onRemove: () => removeTask(index),
-          );
-        },
+          itemBuilder: (context, index) {
+    return TaskTile(
+      task: tasks[index],
+      onUpdate: () {
+        setState(() {});
+        saveTasks(); // Save when task updates (like renaming, due date change, etc.)
+      },
+      onRemove: () => removeTask(index),
+    );
+  },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: addTask,
@@ -491,7 +521,7 @@ class Task {
   Task({
     required this.name,
     this.status = TaskStatus.unstarted,
-    this.dueDate,
+    this.dueDate, required List<Subtask> subtasks,
   })  : isRenaming = false,
         subtasks = [];
   

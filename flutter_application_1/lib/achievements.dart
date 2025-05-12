@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'task_provider.dart';
 
 
 /// Root widget.
@@ -52,6 +54,9 @@ extension TimeRangeLabel on TimeRange {
 
 /// Achievements page with interactive task controls and a custom-drawn line graph.
 class Route3 extends StatefulWidget {
+  const Route3({super.key});
+
+  @override
   State<Route3> createState() => _Route3State();
 }
 
@@ -147,6 +152,7 @@ class _Route3State extends State<Route3> {
   @override
   Widget build(BuildContext context) {
     final chartData = _chartData;
+    final tasks = context.read<TaskProvider>().tasks;
 
     return Scaffold(
       appBar: AppBar(

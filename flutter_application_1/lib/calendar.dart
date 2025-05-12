@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'bar.dart';
-import 'dart:ui';
 import 'package:table_calendar/table_calendar.dart';
-
+import 'package:provider/provider.dart';
+import 'task_provider.dart';
 
 class FourthRoute extends StatelessWidget {
   @override
@@ -12,6 +12,8 @@ class FourthRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tasks = context.read<TaskProvider>().tasks;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(appTitle),

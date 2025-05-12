@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'bar.dart';
-import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'task_provider.dart';
 
 class SecondRoute extends StatefulWidget {
   const SecondRoute({super.key, required this.appTitle});
@@ -13,37 +13,13 @@ class SecondRoute extends StatefulWidget {
 }
 
 class _SecondRouteState extends State<SecondRoute> {
-  List<Task> tasks = [];
-
-  @override
-  void initState() {
-    super.initState();
-    loadTasks();
-  }
-
-  Future<void> loadTasks() async {
-    final prefs = await SharedPreferences.getInstance();
-    final tasksString = prefs.getString('task_list');
-    if (tasksString != null) {
-      final List<dynamic> decoded = json.decode(tasksString);
-      setState(() {
-        tasks = decoded.map((e) => Task.fromJson(e)).toList();
-      });
-    }
-  }
-
-  Future<void> saveTasks() async {
-    final prefs = await SharedPreferences.getInstance();
-    final encoded = json.encode(tasks.map((e) => e.toJson()).toList());
-    await prefs.setString('task_list', encoded);
-  }
+  final List<Task> tasks = [];
 
   /// Add a new Task to the list
   void addTask() {
     setState(() {
-      tasks.add(Task(name: 'New Task', subtasks: []));
+      tasks.add(Task(name: 'New Task'));
     });
-    saveTasks();
   }
 
   /// Remove a Task from the list
@@ -51,11 +27,12 @@ class _SecondRouteState extends State<SecondRoute> {
     setState(() {
       tasks.removeAt(index);
     });
-    saveTasks();
   }
 
   @override
   Widget build(BuildContext context) {
+    final tasks = context.read<TaskProvider>().tasks;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -64,16 +41,13 @@ class _SecondRouteState extends State<SecondRoute> {
       ),
       body: ListView.builder(
         itemCount: tasks.length,
-          itemBuilder: (context, index) {
-    return TaskTile(
-      task: tasks[index],
-      onUpdate: () {
-        setState(() {});
-        saveTasks(); // Save when task updates (like renaming, due date change, etc.)
-      },
-      onRemove: () => removeTask(index),
-    );
-  },
+        itemBuilder: (context, index) {
+          return TaskTile(
+            task: tasks[index],
+            onUpdate: () => setState(() {}),
+            onRemove: () => removeTask(index),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: addTask,
@@ -521,9 +495,9 @@ class Task {
   Task({
     required this.name,
     this.status = TaskStatus.unstarted,
-    this.dueDate, required List<Subtask> subtasks,
-  })  : isRenaming = false,
-        subtasks = [];
+    this.dueDate,
+    this.subtasks = const [],
+  })  : isRenaming = false;
   
   factory Task.fromJson(Map<String, dynamic> json) => Task(
         name: json['name'],

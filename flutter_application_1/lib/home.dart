@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'bar.dart';
 import 'achievements.dart';
-import 'home2.dart';
 
 class ThirdRoute extends StatelessWidget {
   const ThirdRoute({super.key, required this.appTitle});
@@ -54,21 +53,22 @@ class ThirdRoute extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const Home2Page(),
-      ),
-    );
-  },
-  style: ElevatedButton.styleFrom(
-    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
-    textStyle: const TextStyle(fontSize: 24),
-  ),
-  child: const Text('View all tasks'),
-),
-
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
+                        textStyle: const TextStyle(fontSize: 24),
+                      ),
+                      child: const Text('Task name'),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
+                        textStyle: const TextStyle(fontSize: 24),
+                      ),
+                      child: const Text('View all tasks'),
+                    ),
                   ],
                 ),
 
@@ -108,7 +108,7 @@ class ThirdRoute extends StatelessWidget {
                       onPressed: () {         Navigator.push(
            context,
            MaterialPageRoute(
-             builder: (context) => Route3(
+             builder: (context) => const Route3(
                              
              ),
            ),

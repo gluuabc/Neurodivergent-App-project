@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'timer1.dart';
+import 'package:provider/provider.dart';
+import 'task_provider.dart';
+import 'login.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => TaskProvider()..loadTasks(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -22,7 +29,7 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Color.fromARGB(255, 255, 244, 216),
         ),
       ),
-      home: const FirstRoute(appTitle: appTitle, name: 'Timer Track'),
+      home: const BodyContent(),
     );
   }
 }

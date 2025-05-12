@@ -44,7 +44,7 @@ class ThirdRoute extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'You have $totalTasks tasks coming up this week. You’ve got this!',
+              'You have $totalTasks ${totalTasks == 1 ? 'task' : 'tasks'} coming up this week. You’ve got this!',
               style: TextStyle(fontSize: 28), // Bigger text
               textAlign: TextAlign.center,
             ),

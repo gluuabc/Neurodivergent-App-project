@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'home.dart';
 
 class BodyContent extends StatelessWidget {
   const BodyContent({super.key});
@@ -24,7 +25,7 @@ class BodyContent extends StatelessWidget {
 }
 
 
-class TitleSection extends StatelessWidget {
+class TitleSection extends StatefulWidget {
   const TitleSection({
     super.key,
     required this.name,
@@ -37,6 +38,13 @@ class TitleSection extends StatelessWidget {
   final String input2;
 
   @override
+  State<TitleSection> createState() => _TitleSectionState();
+}
+
+class _TitleSectionState extends State<TitleSection> {
+  bool _obscurePassword = true;
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(32),
@@ -44,7 +52,7 @@ class TitleSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            name,
+            widget.name,
             style: const TextStyle(
               fontSize: 36, // Larger than appTitle
               fontWeight: FontWeight.bold,
@@ -54,7 +62,7 @@ class TitleSection extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            input1,
+            widget.input1,
             style: const TextStyle(
               fontSize: 24, // Larger than default but smaller than name
               color: Color.fromARGB(255, 76, 111, 104),
@@ -69,17 +77,28 @@ class TitleSection extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            input2,
+            widget.input2,
             style: const TextStyle(
               fontSize: 24, // Larger than default but smaller than name
               color: Color.fromARGB(255, 76, 111, 104),
             ),
           ),
           const SizedBox(height: 8),
-          const TextField(
+          TextField(
+            obscureText: _obscurePassword,
             decoration: InputDecoration(
               hintText: 'Enter password here',
               border: OutlineInputBorder(),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
             ),
           ),
         ],
@@ -87,7 +106,6 @@ class TitleSection extends StatelessWidget {
     );
   }
 }
-
 
 class LogInButton extends StatelessWidget {
   const LogInButton({super.key});
@@ -98,7 +116,10 @@ class LogInButton extends StatelessWidget {
       padding: const EdgeInsets.all(32),
       child: TextButton(
         onPressed: () {
-          // ...
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ThirdRoute(appTitle: 'Neurodivergent App')),
+          );
         },
         style: TextButton.styleFrom(
           foregroundColor: Colors.white, backgroundColor: const Color.fromARGB(255, 76, 111, 104),

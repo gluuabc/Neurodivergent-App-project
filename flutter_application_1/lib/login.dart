@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'start.dart';
 import 'home.dart';
 
 class LoginPage extends StatelessWidget {
@@ -6,23 +7,44 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            TitleSection(
-              name: 'Sign In',
-              input1: 'Username',
-              input2: 'Password',
+    return Scaffold(
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: SingleChildScrollView(
+              child: Column(
+                children: const [
+                  TitleSection(
+                    name: 'Log In',
+                    input1: 'Username',
+                    input2: 'Password',
+                  ),
+                  LogInButton(),
+                  ForgotButton(),
+                ],
+              ),
             ),
-            LogInButton(),
-            ForgotButton(),
-          ],
-        ),
+          ),
+          Positioned(
+            top: 40,
+            left: 16,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  MaterialPageRoute(builder: (context) => const StartPage()),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
 
 
 class TitleSection extends StatefulWidget {
@@ -122,11 +144,11 @@ class LogInButton extends StatelessWidget {
           );
         },
         style: TextButton.styleFrom(
-          foregroundColor: Colors.white, backgroundColor: const Color.fromARGB(255, 76, 111, 104),
+          foregroundColor: const Color.fromRGBO(255, 255, 255, 1), backgroundColor: const Color.fromARGB(255, 76, 111, 104),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         ),
         child: const Text(
-          'Sign in',
+          'Log In',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,

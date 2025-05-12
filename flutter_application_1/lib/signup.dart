@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'start.dart';
 
 
 class SignUpPage extends StatelessWidget {
@@ -6,19 +7,41 @@ class SignUpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            TitleSection(
-              name: 'Sign Up',
-              input1: 'Email',
-              input2: 'Username',
-              input3: 'Password',
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Main content of the page
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: SingleChildScrollView(
+              child: Column(
+                children: const [
+                  TitleSection(
+                    name: 'Sign Up',
+                    input1: 'Email',
+                    input2: 'Username',
+                    input3: 'Password',
+                  ),
+                  SignUpButton(),
+                ],
+              ),
             ),
-            SignUpButton(),
-          ],
-        ),
+          ),
+          // Back button at the top left corner
+          Positioned(
+            top: 40, // Adjust this value to fit your design
+            left: 16,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  MaterialPageRoute(builder: (context) => const StartPage()),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

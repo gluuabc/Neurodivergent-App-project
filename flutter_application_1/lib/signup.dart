@@ -155,7 +155,10 @@ class SignUpButton extends StatelessWidget {
       padding: const EdgeInsets.all(32),
       child: TextButton(
         onPressed: () {
-          // ...
+          Navigator.pop(
+                  context,
+                  MaterialPageRoute(builder: (context) => const StartPage()),
+                );
         },
         style: TextButton.styleFrom(
           foregroundColor: Colors.white, backgroundColor: const Color.fromARGB(255, 76, 111, 104),

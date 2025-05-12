@@ -54,6 +54,9 @@ extension TimeRangeLabel on TimeRange {
 
 /// Achievements page with interactive task controls and a custom-drawn line graph.
 class Route3 extends StatefulWidget {
+  const Route3({super.key});
+
+  @override
   State<Route3> createState() => _Route3State();
 }
 

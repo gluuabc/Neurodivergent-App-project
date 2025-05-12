@@ -1,55 +1,28 @@
 import 'package:flutter/material.dart';
-// import 'home.dart';
-
-// void main() => runApp(const MyApp());
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-  
-//   @override
-//   Widget build(BuildContext context) {
-//     const String appTitle = 'Sign In';
-    
-//     return MaterialApp(
-//       title: appTitle,
-//       theme: ThemeData(
-//         scaffoldBackgroundColor: const Color.fromARGB(255, 255, 244, 216), // Set background color for the whole app
-//         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-//           backgroundColor: Color.fromARGB(255, 76, 111, 104), // Properly set the bottom bar color
-//           selectedItemColor: Colors.white,
-//           unselectedItemColor: Colors.white,
-//         ),
-//       ),
-//       home: Scaffold(
-//         appBar: AppBar(
-//           title: const Text(appTitle),
-//         ),
-//         body: const BodyContent(),
-//       ),
-//     );
-//   }
-// }
 
 class BodyContent extends StatelessWidget {
   const BodyContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
-      child: Column(
-        children: [
-          TitleSection(
-            name: 'Sign In',
-            input1: 'Username',
-            input2: 'Password'
-          ),
-          LogInButton(),
-          ForgotButton(),
-        ],
+    return const Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          children: const [
+            TitleSection(
+              name: 'Sign In',
+              input1: 'Username',
+              input2: 'Password',
+            ),
+            LogInButton(),
+            ForgotButton(),
+          ],
+        ),
       ),
     );
   }
 }
+
 
 class TitleSection extends StatelessWidget {
   const TitleSection({

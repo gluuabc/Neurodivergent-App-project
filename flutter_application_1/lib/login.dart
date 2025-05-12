@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'home.dart';
 
-class BodyContent extends StatelessWidget {
-  const BodyContent({super.key});
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
       body: SingleChildScrollView(
         child: Column(
-          children: const [
+          children: [
             TitleSection(
               name: 'Sign In',
               input1: 'Username',
@@ -88,7 +88,7 @@ class _TitleSectionState extends State<TitleSection> {
             obscureText: _obscurePassword,
             decoration: InputDecoration(
               hintText: 'Enter password here',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,

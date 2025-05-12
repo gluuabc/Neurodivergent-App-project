@@ -13,30 +13,20 @@ class SecondRoute extends StatefulWidget {
 }
 
 class _SecondRouteState extends State<SecondRoute> {
-  final List<Task> tasks = [];
-
-  /// Add a new Task to the list
-  void addTask() {
-    setState(() {
-      tasks.add(Task(name: 'New Task'));
-    });
-  }
-
-  /// Remove a Task from the list
-  void removeTask(int index) {
-    setState(() {
-      tasks.removeAt(index);
-    });
+  void removeTask(int index, tasks) {
+    if (index < 0 || index >= tasks.length) return;
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    taskProvider.deleteTask(index);
   }
 
   @override
   Widget build(BuildContext context) {
-    final tasks = context.read<TaskProvider>().tasks;
+    final tasks = context.watch<TaskProvider>().tasks;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.appTitle, // Fix: Use widget.appTitle
+          widget.appTitle,
         ),
       ),
       body: ListView.builder(
@@ -45,12 +35,14 @@ class _SecondRouteState extends State<SecondRoute> {
           return TaskTile(
             task: tasks[index],
             onUpdate: () => setState(() {}),
-            onRemove: () => removeTask(index),
+            onRemove: () => removeTask(index, tasks),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: addTask,
+        onPressed: () {
+          context.read<TaskProvider>().addTask(Task(name: 'New Task'));
+        },
         backgroundColor: const Color.fromARGB(255, 76, 111, 104),
         child: const Icon(Icons.add),
       ),
@@ -61,7 +53,6 @@ class _SecondRouteState extends State<SecondRoute> {
 }
 
 
-/// Individual Task Tile
 class TaskTile extends StatefulWidget {
   final Task task;
   final VoidCallback onUpdate;
@@ -79,8 +70,8 @@ class TaskTile extends StatefulWidget {
 }
 
 class _TaskTileState extends State<TaskTile> {
-  bool isExpanded = false; // Expand or collapse subtasks
-  bool isRenaming = false; // Toggle renaming state
+  bool isExpanded = false; 
+  bool isRenaming = false; 
   final TextEditingController renameController = TextEditingController();
 
   @override
@@ -89,7 +80,6 @@ class _TaskTileState extends State<TaskTile> {
     renameController.text = widget.task.name;
   }
 
-  /// Begin renaming the task
   void renameTask() {
     setState(() {
       isRenaming = true;
@@ -97,7 +87,6 @@ class _TaskTileState extends State<TaskTile> {
     });
   }
 
-  /// Save the renamed task
   void saveRename() {
     setState(() {
       widget.task.name = renameController.text;
@@ -140,7 +129,6 @@ class _TaskTileState extends State<TaskTile> {
     );
     if (date == null) return;
 
-    // 2) Pick a time
     final timeOfDay = await showTimePicker(
       context: context,
       initialTime:
@@ -148,7 +136,6 @@ class _TaskTileState extends State<TaskTile> {
     );
     if (timeOfDay == null) return;
 
-    // Combine into a DateTime
     final newDueDate = DateTime(
         date.year, date.month, date.day, timeOfDay.hour, timeOfDay.minute);
 

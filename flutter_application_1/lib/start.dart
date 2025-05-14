@@ -1,3 +1,5 @@
+// welcome page, app first opens here
+
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'signup.dart';
@@ -17,13 +19,16 @@ class StartPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // app logo
               const Text(
                 '🧠',
                 style: TextStyle(fontSize: 64),
               ),
               const SizedBox(height: 20),
+              
+              // app name
               const Text(
-                'Neurodivergent\nProductivity App',
+                'Atypical App',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 36,
@@ -32,9 +37,11 @@ class StartPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 40),
+
+              // login/signup buttons
               TextButton(
                 onPressed: () {
-                  Navigator.push(
+                  Navigator.push( // button functionality
                     context,
                     MaterialPageRoute(builder: (context) => const LoginPage()),
                   );
@@ -52,7 +59,7 @@ class StartPage extends StatelessWidget {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                  Navigator.push(
+                  Navigator.push( // button functionality
                     context,
                     MaterialPageRoute(builder: (context) => const SignUpPage()),
                   );

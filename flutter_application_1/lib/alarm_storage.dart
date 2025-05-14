@@ -1,5 +1,7 @@
+// for storing alarm data
+
 import 'dart:convert';
-import 'pomodoro.dart';
+import 'pomodoro.dart'; // json methods
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AlarmStorage {

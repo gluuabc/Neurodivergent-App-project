@@ -9,7 +9,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
-        children: [
+        children: [ // define sections
           Padding(
             padding: const EdgeInsets.all(32),
             child: SingleChildScrollView(
@@ -26,6 +26,7 @@ class LoginPage extends StatelessWidget {
               ),
             ),
           ),
+          // Back button at the top left corner
           Positioned(
             top: 40,
             left: 16,
@@ -73,6 +74,7 @@ class _TitleSectionState extends State<TitleSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // define styles
           Text(
             widget.name,
             style: const TextStyle(
@@ -91,6 +93,8 @@ class _TitleSectionState extends State<TitleSection> {
             ),
           ),
           const SizedBox(height: 8),
+
+          // input fields for username/password
           const TextField(
             decoration: InputDecoration(
               hintText: 'Enter username here',
@@ -107,7 +111,7 @@ class _TitleSectionState extends State<TitleSection> {
           ),
           const SizedBox(height: 8),
           TextField(
-            obscureText: _obscurePassword,
+            obscureText: _obscurePassword, // toggle visibility
             decoration: InputDecoration(
               hintText: 'Enter password here',
               border: const OutlineInputBorder(),
@@ -137,16 +141,21 @@ class LogInButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(32),
       child: TextButton(
+        // functionality
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ThirdRoute(appTitle: 'Neurodivergent App')),
+            MaterialPageRoute(builder: (context) => const ThirdRoute(appTitle: 'Atypical App')),
           );
         },
+
+        // style
         style: TextButton.styleFrom(
           foregroundColor: const Color.fromRGBO(255, 255, 255, 1), backgroundColor: const Color.fromARGB(255, 76, 111, 104),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         ),
+
+        // label
         child: const Text(
           'Log In',
           style: TextStyle(
@@ -167,13 +176,18 @@ class ForgotButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(2),
       child: TextButton(
+        // functionality (does not yet exist)
         onPressed: () {
           // ...
         },
+        
+        // style
         style: TextButton.styleFrom(
           foregroundColor: Colors.white, backgroundColor: const Color.fromARGB(255, 76, 111, 104),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         ),
+        
+        // label
         child: const Text(
           'Forgot password',
           style: TextStyle(

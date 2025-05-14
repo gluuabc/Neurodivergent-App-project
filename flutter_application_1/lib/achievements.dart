@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'task_provider.dart';
-import 'list.dart';
-
 
 /// Root widget.
 
@@ -21,21 +19,6 @@ extension TaskStatusLabel on TaskStatus {
     }
   }
 }
-
-// /// Simple task model.
-// class Task {
-//   String name;
-//   String timeLength; // e.g. "2 hours"
-//   TaskStatus status;
-//   DateTime? finishedAt; // Set when marked as finished.
-
-//   Task({
-//     required this.name,
-//     required this.timeLength,
-//     this.status = TaskStatus.unfinished,
-//     this.finishedAt,
-//   });
-// }
 
 /// Enum for selecting chart time range.
 enum TimeRange { week, month, year }
@@ -81,41 +64,6 @@ class _Route3State extends State<Route3> {
     super.dispose();
   }
 
-  // /// Adds a new task based on input fields.
-  // void _addTask() {
-  //   final name = _taskNameController.text.trim();
-  //   final timeLen = _taskTimeLengthController.text.trim();
-  //   if (name.isEmpty) return;
-  //   setState(() {
-  //     _tasks.add(Task(
-  //       name: name,
-  //       timeLength: timeLen.isEmpty ? "Unknown" : timeLen,
-  //       status: _newTaskStatus,
-  //       finishedAt:
-  //           _newTaskStatus == TaskStatus.finished ? DateTime.now() : null,
-  //     ));
-  //     _taskNameController.clear();
-  //     _taskTimeLengthController.clear();
-  //     _newTaskStatus = TaskStatus.unfinished;
-  //   });
-  // }
-
-  // /// Updates a task's status and records finish time if needed.
-  // void _updateTaskStatus(int index, TaskStatus newStatus) {
-  //   setState(() {
-  //     _tasks[index].status = newStatus;
-  //     _tasks[index].finishedAt =
-  //         newStatus == TaskStatus.finished ? DateTime.now() : null;
-  //   });
-  // }
-
-  // /// Removes a task from the list.
-  // void _removeTask(int index) {
-  //   setState(() {
-  //     _tasks.removeAt(index);
-  //   });
-  // }
-
   /// Computes chart data (number of finished tasks per day) based on selected time range.
   List<_ChartData> getChartData(BuildContext context) {
     int daysBack;
@@ -155,8 +103,7 @@ class _Route3State extends State<Route3> {
   Widget build(BuildContext context) {
     // Build list of chart data from oldest to newest.
     final chartData = getChartData(context);
-    // final tasks = context.read<TaskProvider>().tasks;
-
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text("Achievements",
@@ -222,95 +169,6 @@ class _Route3State extends State<Route3> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // // Add Task Form.
-            // const Text("Add a New Task",
-            //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            // TextField(
-            //   controller: _taskNameController,
-            //   decoration: const InputDecoration(labelText: "Task Name"),
-            // ),
-            // TextField(
-            //   controller: _taskTimeLengthController,
-            //   decoration: const InputDecoration(
-            //       labelText: "Time Length (e.g. 2 hours)"),
-            // ),
-            // const SizedBox(height: 8),
-            // Row(
-            //   children: [
-            //     const Text("Status: "),
-            //     DropdownButton<TaskStatus>(
-            //       value: _newTaskStatus,
-            //       onChanged: (val) {
-            //         if (val == null) return;
-            //         setState(() {
-            //           _newTaskStatus = val;
-            //         });
-            //       },
-            //       items: TaskStatus.values.map((status) {
-            //         return DropdownMenuItem(
-            //             value: status, child: Text(status.label));
-            //       }).toList(),
-            //     ),
-            //     const Spacer(),
-            //     ElevatedButton(
-            //       onPressed: _addTask,
-            //       style: ElevatedButton.styleFrom(
-            //         backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-            //       ),
-            //       child: const Text("Add Task",
-            //           style: TextStyle(color: Colors.white)),
-            //     ),
-            //   ],
-            // ),
-            // const SizedBox(height: 24),
-
-            // // Existing Tasks List.
-            // const Text("Existing Tasks",
-            //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            // const Divider(),
-            // _tasks.isEmpty
-            //     ? const Text("No tasks yet.")
-            //     : Column(
-            //         children: List.generate(_tasks.length, (index) {
-            //           final task = _tasks[index];
-            //           return Card(
-            //             margin: const EdgeInsets.symmetric(vertical: 6),
-            //             child: ListTile(
-            //               title: Text(
-            //                 "${task.name} (${task.timeLength})",
-            //                 style: TextStyle(
-            //                   fontWeight: FontWeight.bold,
-            //                   decoration: task.status == TaskStatus.finished
-            //                       ? TextDecoration.lineThrough
-            //                       : TextDecoration.none,
-            //                 ),
-            //               ),
-            //               subtitle: Text("Status: ${task.status.label}"),
-            //               trailing: Row(
-            //                 mainAxisSize: MainAxisSize.min,
-            //                 children: [
-            //                   DropdownButton<TaskStatus>(
-            //                     value: task.status,
-            //                     onChanged: (val) =>
-            //                         _updateTaskStatus(index, val!),
-            //                     items: TaskStatus.values.map((s) {
-            //                       return DropdownMenuItem(
-            //                           value: s, child: Text(s.label));
-            //                     }).toList(),
-            //                   ),
-            //                   const SizedBox(width: 8),
-            //                   IconButton(
-            //                     icon:
-            //                         const Icon(Icons.delete, color: Colors.red),
-            //                     onPressed: () => _removeTask(index),
-            //                   ),
-            //                 ],
-            //               ),
-            //             ),
-            //           );
-            //         }),
-            //       ),
           ],
         ),
       ),
@@ -410,8 +268,6 @@ class _LineChartPainter extends CustomPainter {
           Offset(points[i].dx - textPainter.width / 2,
               size.height - marginBottom + 4));
     }
-
-    // (Optional) You can add y-axis labels similarly.
   }
 
   @override

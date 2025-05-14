@@ -1,5 +1,5 @@
-import 'dart:convert'; // ← NEW
-import 'package:flutter/services.dart' show rootBundle; // ← NEW
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'bar.dart';
@@ -66,8 +66,6 @@ class _SettingsPageState extends State<SettingsPage> {
   String _selectedFontFamily = 'Roboto'; // Default font
   final List<String> _fontFamilies = [
     'Roboto',
-    // 'Serif',
-    // 'Monospace',
     'OpenDyslexic'
   ];
 
@@ -82,7 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (mounted) setState(() => _isPlaying = playing);
     });
 
-    _initTrackList(); // ← NEW: build dropdown list dynamically
+    _initTrackList(); // build dropdown list dynamically
     _loadSettings();
   }
 

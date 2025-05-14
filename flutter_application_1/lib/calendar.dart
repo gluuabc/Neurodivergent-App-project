@@ -14,13 +14,14 @@ class FourthRoute extends StatefulWidget {
 }
 
 class _FourthRouteState extends State<FourthRoute> {
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
+  DateTime _focusedDay = DateTime.now(); // auto updates to current date
+  DateTime? _selectedDay; // optional
 
   @override
   Widget build(BuildContext context) {
-    final tasks = context.watch<TaskProvider>().tasks;
+    final tasks = context.watch<TaskProvider>().tasks; // access task data
 
+    // get list of tasks due on selected day
     List<Task> getTasksForDay(DateTime? day) {
       return tasks.where((task) {
         if (task.dueDate == null) return false;
@@ -37,8 +38,10 @@ class _FourthRouteState extends State<FourthRoute> {
         children: [
           TableCalendar<Task>(
             focusedDay: _focusedDay,
-            firstDay: DateTime.utc(2010, 1, 1),
+            firstDay: DateTime.utc(2010, 1, 1), // allowed range
             lastDay: DateTime.utc(2030, 12, 31),
+
+            // set selected day when user clicks on a date
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
@@ -51,6 +54,8 @@ class _FourthRouteState extends State<FourthRoute> {
               _focusedDay = focusedDay;
             },
             eventLoader: getTasksForDay,
+            
+            // mark selected date with dot
             calendarStyle: const CalendarStyle(
               markerDecoration: BoxDecoration(
                 color: Color.fromARGB(255, 243, 166, 33),
@@ -59,17 +64,19 @@ class _FourthRouteState extends State<FourthRoute> {
             ),
           ),
           const SizedBox(height: 8),
-                    if (tasksForSelectedDay.isNotEmpty)
+          
+          // check whether or not there are tasks to display
+          if (tasksForSelectedDay.isNotEmpty)  
             Expanded(
               child: ListView(
                 children: tasksForSelectedDay.map((task) {
                   return TaskTile(
                     task: task,
                     onUpdate: () {
-                      // Handle task update
+                      // code for task update
                     },
                     onRemove: () {
-                      // Handle task removal
+                      // code for task removal
                     },
                   );
                 }).toList(),
@@ -77,6 +84,7 @@ class _FourthRouteState extends State<FourthRoute> {
             )
           else
             const Padding(
+              // for dates w empty task list
               padding: EdgeInsets.all(16.0),
               child: Text("No tasks for this day."),
             ),

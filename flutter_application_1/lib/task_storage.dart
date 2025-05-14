@@ -1,5 +1,7 @@
+// for storing task data
+
 import 'dart:convert';
-import 'list.dart';
+import 'list.dart'; // json methods
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TaskStorage {

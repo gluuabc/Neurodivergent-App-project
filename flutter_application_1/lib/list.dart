@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'bar.dart';
 import 'package:provider/provider.dart';
 import 'task_provider.dart';
-import 'list.dart';
+
 
 class SecondRoute extends StatefulWidget {
   const SecondRoute({super.key, required this.appTitle});
@@ -22,7 +22,7 @@ class _SecondRouteState extends State<SecondRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = context.watch<TaskProvider>().tasks;
+    final tasks = context.watch<TaskProvider>().tasks; // access task data
 
     return Scaffold(
       appBar: AppBar(
@@ -30,6 +30,8 @@ class _SecondRouteState extends State<SecondRoute> {
           widget.appTitle,
         ),
       ),
+
+      // load in tiles
       body: ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
@@ -40,6 +42,8 @@ class _SecondRouteState extends State<SecondRoute> {
           );
         },
       ),
+      
+      // create new task
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           context.read<TaskProvider>().addTask(Task(name: 'New Task'));
@@ -53,7 +57,7 @@ class _SecondRouteState extends State<SecondRoute> {
   }
 }
 
-
+// Create tiles to display all task info
 class TaskTile extends StatefulWidget {
   final Task task;
   final VoidCallback onUpdate;
@@ -81,6 +85,7 @@ class _TaskTileState extends State<TaskTile> {
     renameController.text = widget.task.name;
   }
 
+  // Enter new task name
   void renameTask() {
     setState(() {
       isRenaming = true;
@@ -88,6 +93,7 @@ class _TaskTileState extends State<TaskTile> {
     });
   }
 
+  // Save new name (hit checkmark)
   void saveRename() {
     setState(() {
       widget.task.name = renameController.text;
@@ -184,6 +190,9 @@ class _TaskTileState extends State<TaskTile> {
                   value: task.status,
                   onChanged: (newStatus) {
                     if (newStatus == null) return;
+                    if (newStatus == TaskStatus.finished) {
+                      task.finishedAt = DateTime.now();
+                    }
                     setState(() {
                       task.status = newStatus;
                     });
@@ -477,6 +486,7 @@ class Task {
   String name;
   TaskStatus status;
   DateTime? dueDate; // optional due date/time
+  DateTime? finishedAt;
   bool isRenaming;
   List<Subtask> subtasks;
 
@@ -484,12 +494,16 @@ class Task {
     required this.name,
     this.status = TaskStatus.unstarted,
     this.dueDate,
+    this.finishedAt,
     this.subtasks = const [],
   })  : isRenaming = false;
   
+  // used in TaskStorage class
   factory Task.fromJson(Map<String, dynamic> json) => Task(
         name: json['name'],
         dueDate:
+            json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
+        finishedAt:
             json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
         status: TaskStatus.values[json['status']],
         subtasks: (json['subtasks'] as List<dynamic>)
@@ -500,6 +514,7 @@ class Task {
   Map<String, dynamic> toJson() => {
         'name': name,
         'dueDate': dueDate?.toIso8601String(),
+        'finishedAt': dueDate?.toIso8601String(),
         'status': status.index,
         'subtasks': subtasks.map((e) => e.toJson()).toList(),
       };
@@ -519,6 +534,7 @@ class Subtask {
     this.isRenaming = false,
   });
 
+  // used in TaskStorage class
   factory Subtask.fromJson(Map<String, dynamic> json) => Subtask(
         name: json['name'],
         dueDate:

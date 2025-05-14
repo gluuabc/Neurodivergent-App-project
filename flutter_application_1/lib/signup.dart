@@ -9,8 +9,7 @@ class SignUpPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
-        children: [
-          // Main content of the page
+        children: [ // define sections
           Padding(
             padding: const EdgeInsets.all(32),
             child: SingleChildScrollView(
@@ -30,7 +29,7 @@ class SignUpPage extends StatelessWidget {
           ),
           // Back button at the top left corner
           Positioned(
-            top: 40, // Adjust this value to fit your design
+            top: 40, 
             left: 16,
             child: IconButton(
               icon: const Icon(Icons.arrow_back),
@@ -78,6 +77,7 @@ class _TitleSectionState extends State<TitleSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // define styles
           Text(
             widget.name,
             style: const TextStyle(
@@ -96,6 +96,8 @@ class _TitleSectionState extends State<TitleSection> {
             ),
           ),
           const SizedBox(height: 8),
+
+          // input fields for signup info
           const TextField(
             decoration: InputDecoration(
               hintText: 'Enter email here',
@@ -142,7 +144,7 @@ class _TitleSectionState extends State<TitleSection> {
           ),
           const SizedBox(height: 8),
           TextField(
-            obscureText: _obscurePassword,
+            obscureText: _obscurePassword, // toggle visibility
             decoration: InputDecoration(
               hintText: 'Enter password here',
               border: OutlineInputBorder(),
@@ -172,16 +174,21 @@ class SignUpButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(32),
       child: TextButton(
+        // functionality
         onPressed: () {
           Navigator.pop(
                   context,
                   MaterialPageRoute(builder: (context) => const StartPage()),
                 );
         },
+        
+        // style
         style: TextButton.styleFrom(
           foregroundColor: Colors.white, backgroundColor: const Color.fromARGB(255, 76, 111, 104),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         ),
+        
+        // label
         child: const Text(
           'Create account',
           style: TextStyle(

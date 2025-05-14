@@ -1,23 +1,57 @@
-// lib/pomodoro.dart
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:just_audio/just_audio.dart';
+import 'package:provider/provider.dart';
 import 'bar.dart';
+import 'alarm_provider.dart';
 
 class Alarm {
   String name;
   List<SubAlarm> subAlarms;
   String audioFile;
-  Alarm({required this.name, required this.subAlarms, required this.audioFile});
+  Alarm({
+    required this.name,
+    required this.subAlarms,
+    required this.audioFile
+  });
+
+  // used in AlarmStorage class
+  factory Alarm.fromJson(Map<String, dynamic> json) => Alarm(
+        name: json['name'],
+        subAlarms: (json['subAlarms'] as List<dynamic>)
+            .map((e) => SubAlarm.fromJson(e))
+            .toList(),
+        audioFile: json['audioFile']
+      );
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'subAlarms': subAlarms.map((e) => e.toJson()).toList(),
+        'audioFile': audioFile
+      };
 }
 
 class SubAlarm {
   String name;
   Duration duration;
-  SubAlarm({required this.name, required this.duration});
+
+  SubAlarm({
+    required this.name,
+    required this.duration
+  });
+
+  // used in AlarmStorage class
+  factory SubAlarm.fromJson(Map<String, dynamic> json) => SubAlarm(
+        name: json['name'],
+        duration: Duration(seconds: json['duration']),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'duration': duration.inSeconds,
+      };
 }
 
 class PomodoroRoute extends StatefulWidget {
@@ -28,14 +62,15 @@ class PomodoroRoute extends StatefulWidget {
 }
 
 class _PomodoroRouteState extends State<PomodoroRoute> {
-  final List<Alarm> _alarms = [];
   Alarm? _currentAlarm;
   SubAlarm? _currentSub;
   final AudioPlayer _player = AudioPlayer();
   StreamSubscription<bool>? _playSub;
   Timer? _timer;
 
-  bool _timerRunning = false;
+  List<Alarm> get _alarms => Provider.of<AlarmProvider>(context, listen: false).alarms;
+
+  bool _isRunning = false;
   bool _audioPlaying = false;
   Duration _remaining = Duration.zero;
   int _segIndex = 0;
@@ -49,6 +84,7 @@ class _PomodoroRouteState extends State<PomodoroRoute> {
     });
   }
 
+  // reset function
   @override
   void dispose() {
     _timer?.cancel();
@@ -57,63 +93,67 @@ class _PomodoroRouteState extends State<PomodoroRoute> {
     super.dispose();
   }
 
-  /// start / pause the countdown
   void _startPause() {
-    if (_currentSub == null) return;
+    final alarmProvider = context.read<AlarmProvider>();
+    final currentSub = alarmProvider.currentSub;
 
-    if (_timerRunning) {
-      // pause
+    // check current subalarm is valid
+    if (currentSub == null) return;
+
+    if (alarmProvider.isRunning) {
       _timer?.cancel();
-      setState(() => _timerRunning = false);
+      alarmProvider.pause();
       return;
     }
 
-    // kick off a new timer
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      // countdown branch
-      if (_remaining > Duration.zero) {
-        setState(() => _remaining -= const Duration(seconds: 1));
+      // check if timer is still going
+      if (alarmProvider.remaining > Duration.zero) {
+        alarmProvider.decrementRemaining(const Duration(seconds: 1));
         return;
       }
-
-      // segment just ended
+      
+      // stop timer at 0s 
       _timer?.cancel();
-      setState(() => _timerRunning = false);
+      alarmProvider.pause();
 
-      // play the alarm sound once
+      final currentAlarm = alarmProvider.currentAlarm;
+      if (currentAlarm == null) return;
+
+      // play sound on end
       _player
-          .setAsset(_currentAlarm!.audioFile)
+          .setAsset(currentAlarm.audioFile)
           .then((_) => _player.play())
-          .catchError((_) {}); // swallow errors
+          .catchError((_) {});
 
-      // advance to next segment (but do not auto-start it)
-      if (_segIndex < _currentAlarm!.subAlarms.length - 1) {
-        _segIndex++;
-        _currentSub = _currentAlarm!.subAlarms[_segIndex];
-        _remaining = _currentSub!.duration;
-      }
-
-      // done
+      // continue to next segment (work/break)
+      alarmProvider.advanceSegment();
     });
 
-    setState(() => _timerRunning = true);
+    alarmProvider.start();
   }
 
-  /// user taps on one of the saved alarms
+  // user taps on one of the saved alarms
   void _selectAlarm(int i) {
+    final alarmProvider = Provider.of<AlarmProvider>(context, listen: false);
+    final a = alarmProvider.alarms[i];
+
     _timer?.cancel();
     _player.stop();
-    final a = _alarms[i];
+
+    alarmProvider.setCurrentAlarm(a);
+    
+    // reset segment index and player state
     setState(() {
       _currentAlarm = a;
       _segIndex = 0;
       _currentSub = a.subAlarms.isNotEmpty ? a.subAlarms.first : null;
       _remaining = _currentSub?.duration ?? Duration.zero;
-      _timerRunning = false;
+      _isRunning = false;
     });
   }
 
-  /// push create/edit form and await back a new Alarm
+  // push create/edit form and await back a new Alarm
   Future<void> _pushForm({Alarm? existing, int? idx}) async {
     final got = await Navigator.push<Alarm>(
       context,
@@ -121,11 +161,14 @@ class _PomodoroRouteState extends State<PomodoroRoute> {
     );
     if (got == null) return;
 
+    // use provider for data storage
+    final alarmProvider = Provider.of<AlarmProvider>(context, listen: false);
+
     setState(() {
       if (idx == null) {
-        _alarms.add(got);
+        alarmProvider.addAlarm(got);
       } else {
-        _alarms[idx] = got;
+        alarmProvider.updateAlarm(idx, got);
         // if they edited the currently-running alarm, re-select it
         if (existing == _currentAlarm) _selectAlarm(idx);
       }
@@ -133,16 +176,23 @@ class _PomodoroRouteState extends State<PomodoroRoute> {
   }
 
   void _deleteAlarm(int i) {
-    if (_currentAlarm == _alarms[i]) {
+    final alarmProvider = Provider.of<AlarmProvider>(context, listen: false);
+    // check if deleted alarm is currently active -> then stop
+    if (alarmProvider.currentAlarm == alarmProvider.alarms[i]) {
       _timer?.cancel();
       _player.stop();
-      _currentAlarm = null;
     }
-    setState(() => _alarms.removeAt(i));
+    alarmProvider.deleteAlarm(i);
   }
 
   @override
   Widget build(BuildContext context) {
+    final alarmProvider = context.watch<AlarmProvider>();
+    final remaining = alarmProvider.remaining;
+    final isRunning = alarmProvider.isRunning;
+    final currentAlarm = alarmProvider.currentAlarm;
+    final currentSub = alarmProvider.currentSub;
+    
     return Scaffold(
       appBar: AppBar(title: Text(widget.appTitle)),
       body: Padding(
@@ -152,9 +202,9 @@ class _PomodoroRouteState extends State<PomodoroRoute> {
           Expanded(
             flex: 2,
             child: ListView.builder(
-              itemCount: _alarms.length,
+              itemCount: alarmProvider.alarms.length,
               itemBuilder: (_, i) {
-                final a = _alarms[i];
+                final a = alarmProvider.alarms[i];
                 return ListTile(
                   title: Text(a.name),
                   subtitle: Text('${a.subAlarms.length} segment(s)'),
@@ -180,7 +230,7 @@ class _PomodoroRouteState extends State<PomodoroRoute> {
           const Divider(),
 
           // ── Active Timer ────────────────────────
-          if (_currentAlarm == null)
+          if (currentAlarm == null)
             const Expanded(
               flex: 3,
               child: Center(
@@ -192,23 +242,23 @@ class _PomodoroRouteState extends State<PomodoroRoute> {
             Expanded(
               flex: 3,
               child: Column(children: [
-                Text('Alarm: ${_currentAlarm!.name}',
+                Text('Alarm: ${currentAlarm.name}',
                     style: const TextStyle(fontSize: 20)),
                 const SizedBox(height: 8),
-                Text('Segment: ${_currentSub?.name ?? "---"}',
+                Text('Segment: ${currentSub?.name ?? "---"}',
                     style: const TextStyle(fontSize: 18)),
                 const SizedBox(height: 8),
                 Text(
-                  '${_remaining.inHours.toString().padLeft(2, '0')}:'
-                  '${_remaining.inMinutes.remainder(60).toString().padLeft(2, '0')}:'
-                  '${_remaining.inSeconds.remainder(60).toString().padLeft(2, '0')}',
+                  '${remaining.inHours.toString().padLeft(2, '0')}:'
+                  '${remaining.inMinutes.remainder(60).toString().padLeft(2, '0')}:'
+                  '${remaining.inSeconds.remainder(60).toString().padLeft(2, '0')}',
                   style: const TextStyle(
                       fontSize: 48, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _startPause,
-                  child: Text(_timerRunning ? 'Pause' : 'Start'),
+                  child: Text(isRunning ? 'Pause' : 'Start'),
                 ),
 
                 // “Stop” button shows only while audio is playing
@@ -231,7 +281,7 @@ class _PomodoroRouteState extends State<PomodoroRoute> {
           ),
         ]),
       ),
-      bottomNavigationBar: const CustomBottomBar(currentIndex: 5),
+      bottomNavigationBar: const CustomBottomBar(currentIndex: 0),
     );
   }
 }
@@ -259,11 +309,13 @@ class _AlarmFormPageState extends State<AlarmFormPage> {
   void initState() {
     super.initState();
     _loadTracks().then((_) {
+      // load data as long as not empty
       if (widget.alarm != null) _populate(widget.alarm!);
       setState(() => _loading = false);
     });
   }
 
+  // load audio files
   Future<void> _loadTracks() async {
     final manifest =
         json.decode(await rootBundle.loadString('AssetManifest.json'))
@@ -278,6 +330,7 @@ class _AlarmFormPageState extends State<AlarmFormPage> {
         widget.alarm?.audioFile ?? (_tracks.isNotEmpty ? _tracks.first : null);
   }
 
+  // load data for alarm
   void _populate(Alarm a) {
     _nameCtrl.text = a.name;
     for (final s in a.subAlarms) {
@@ -290,6 +343,7 @@ class _AlarmFormPageState extends State<AlarmFormPage> {
     }
   }
 
+  // break alarm into segments (work/break)
   void _addSeg() {
     setState(() {
       _segName.add(TextEditingController());
@@ -328,9 +382,11 @@ class _AlarmFormPageState extends State<AlarmFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading)
+    if (_loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
+    // display alarms as widget
     return Scaffold(
       appBar: AppBar(
           title: Text(widget.alarm == null
@@ -395,9 +451,9 @@ class _AlarmFormPageState extends State<AlarmFormPage> {
           ),
           ElevatedButton(
             onPressed: _save,
-            child: const Text('Save Alarm'),
             style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(48)),
+            child: const Text('Save Alarm'),
           ),
         ]),
       ),

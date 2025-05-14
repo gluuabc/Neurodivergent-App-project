@@ -1,3 +1,5 @@
+// for pushing alarm data into other files
+
 import 'package:flutter/material.dart';
 import 'pomodoro.dart';
 import 'alarm_storage.dart';
@@ -7,7 +9,6 @@ class AlarmProvider extends ChangeNotifier {
   List<Alarm> _alarms = [];
   List<Alarm> get alarms => _alarms;
 
-  // Timer? _timer;
   Duration _remaining = Duration.zero;
   bool _isRunning = false;
 
@@ -22,6 +23,7 @@ class AlarmProvider extends ChangeNotifier {
   int get segIndex => _segIndex;
   SubAlarm? get currentSub => _currentSub;
   
+  // storing + accessing memory
   Future<void> loadAlarms() async {
     _alarms = await AlarmStorage.loadAlarms();
     notifyListeners();
@@ -31,6 +33,9 @@ class AlarmProvider extends ChangeNotifier {
     await AlarmStorage.saveAlarms(_alarms);
   }
 
+  // defining key functions in centralized area
+
+  // ------- for alarm list ---------
   void addAlarm(Alarm alarm) {
     _alarms.add(alarm);
     saveAlarms();
@@ -49,6 +54,7 @@ class AlarmProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ------- for timer ---------
   void setCurrentAlarm(Alarm alarm) {
     _currentAlarm = alarm;
     _segIndex = 0;
@@ -68,11 +74,13 @@ class AlarmProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // timer goes down
   void decrementRemaining(Duration by) {
     _remaining -= by;
     notifyListeners();
   }
 
+  // switch from works to breaks
   void advanceSegment() {
     if (_currentAlarm == null) return;
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'task_provider.dart';
+import 'list.dart';
 
 
 /// Root widget.
@@ -21,20 +22,20 @@ extension TaskStatusLabel on TaskStatus {
   }
 }
 
-/// Simple task model.
-class Task {
-  String name;
-  String timeLength; // e.g. "2 hours"
-  TaskStatus status;
-  DateTime? finishedAt; // Set when marked as finished.
+// /// Simple task model.
+// class Task {
+//   String name;
+//   String timeLength; // e.g. "2 hours"
+//   TaskStatus status;
+//   DateTime? finishedAt; // Set when marked as finished.
 
-  Task({
-    required this.name,
-    required this.timeLength,
-    this.status = TaskStatus.unfinished,
-    this.finishedAt,
-  });
-}
+//   Task({
+//     required this.name,
+//     required this.timeLength,
+//     this.status = TaskStatus.unfinished,
+//     this.finishedAt,
+//   });
+// }
 
 /// Enum for selecting chart time range.
 enum TimeRange { week, month, year }
@@ -62,13 +63,13 @@ class Route3 extends StatefulWidget {
 
 class _Route3State extends State<Route3> {
   // In-memory list of tasks.
-  final List<Task> _tasks = [];
+  // final List<Task> _tasks = [];
 
   // Controllers for new task input.
   final TextEditingController _taskNameController = TextEditingController();
   final TextEditingController _taskTimeLengthController =
       TextEditingController();
-  TaskStatus _newTaskStatus = TaskStatus.unfinished;
+  final TaskStatus _newTaskStatus = TaskStatus.unfinished;
 
   // Selected time range for the chart.
   TimeRange _timeRange = TimeRange.week;
@@ -80,43 +81,43 @@ class _Route3State extends State<Route3> {
     super.dispose();
   }
 
-  /// Adds a new task based on input fields.
-  void _addTask() {
-    final name = _taskNameController.text.trim();
-    final timeLen = _taskTimeLengthController.text.trim();
-    if (name.isEmpty) return;
-    setState(() {
-      _tasks.add(Task(
-        name: name,
-        timeLength: timeLen.isEmpty ? "Unknown" : timeLen,
-        status: _newTaskStatus,
-        finishedAt:
-            _newTaskStatus == TaskStatus.finished ? DateTime.now() : null,
-      ));
-      _taskNameController.clear();
-      _taskTimeLengthController.clear();
-      _newTaskStatus = TaskStatus.unfinished;
-    });
-  }
+  // /// Adds a new task based on input fields.
+  // void _addTask() {
+  //   final name = _taskNameController.text.trim();
+  //   final timeLen = _taskTimeLengthController.text.trim();
+  //   if (name.isEmpty) return;
+  //   setState(() {
+  //     _tasks.add(Task(
+  //       name: name,
+  //       timeLength: timeLen.isEmpty ? "Unknown" : timeLen,
+  //       status: _newTaskStatus,
+  //       finishedAt:
+  //           _newTaskStatus == TaskStatus.finished ? DateTime.now() : null,
+  //     ));
+  //     _taskNameController.clear();
+  //     _taskTimeLengthController.clear();
+  //     _newTaskStatus = TaskStatus.unfinished;
+  //   });
+  // }
 
-  /// Updates a task's status and records finish time if needed.
-  void _updateTaskStatus(int index, TaskStatus newStatus) {
-    setState(() {
-      _tasks[index].status = newStatus;
-      _tasks[index].finishedAt =
-          newStatus == TaskStatus.finished ? DateTime.now() : null;
-    });
-  }
+  // /// Updates a task's status and records finish time if needed.
+  // void _updateTaskStatus(int index, TaskStatus newStatus) {
+  //   setState(() {
+  //     _tasks[index].status = newStatus;
+  //     _tasks[index].finishedAt =
+  //         newStatus == TaskStatus.finished ? DateTime.now() : null;
+  //   });
+  // }
 
-  /// Removes a task from the list.
-  void _removeTask(int index) {
-    setState(() {
-      _tasks.removeAt(index);
-    });
-  }
+  // /// Removes a task from the list.
+  // void _removeTask(int index) {
+  //   setState(() {
+  //     _tasks.removeAt(index);
+  //   });
+  // }
 
   /// Computes chart data (number of finished tasks per day) based on selected time range.
-  List<_ChartData> get _chartData {
+  List<_ChartData> getChartData(BuildContext context) {
     int daysBack;
     switch (_timeRange) {
       case TimeRange.week:
@@ -132,7 +133,8 @@ class _Route3State extends State<Route3> {
     final now = DateTime.now();
     // Initialize counts for each day offset (0 = today, 1 = yesterday, etc.)
     final Map<int, int> counts = {for (var i = 0; i < daysBack; i++) i: 0};
-    for (final task in _tasks) {
+    final tasks = context.watch<TaskProvider>().tasks;
+    for (final task in tasks) {
       if (task.finishedAt != null) {
         final diff = now.difference(task.finishedAt!).inDays;
         if (diff >= 0 && diff < daysBack) {
@@ -151,8 +153,9 @@ class _Route3State extends State<Route3> {
 
   @override
   Widget build(BuildContext context) {
-    final chartData = _chartData;
-    final tasks = context.read<TaskProvider>().tasks;
+    // Build list of chart data from oldest to newest.
+    final chartData = getChartData(context);
+    // final tasks = context.read<TaskProvider>().tasks;
 
     return Scaffold(
       appBar: AppBar(
@@ -220,94 +223,94 @@ class _Route3State extends State<Route3> {
             ),
             const SizedBox(height: 24),
 
-            // Add Task Form.
-            const Text("Add a New Task",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            TextField(
-              controller: _taskNameController,
-              decoration: const InputDecoration(labelText: "Task Name"),
-            ),
-            TextField(
-              controller: _taskTimeLengthController,
-              decoration: const InputDecoration(
-                  labelText: "Time Length (e.g. 2 hours)"),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Text("Status: "),
-                DropdownButton<TaskStatus>(
-                  value: _newTaskStatus,
-                  onChanged: (val) {
-                    if (val == null) return;
-                    setState(() {
-                      _newTaskStatus = val;
-                    });
-                  },
-                  items: TaskStatus.values.map((status) {
-                    return DropdownMenuItem(
-                        value: status, child: Text(status.label));
-                  }).toList(),
-                ),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: _addTask,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 76, 111, 104),
-                  ),
-                  child: const Text("Add Task",
-                      style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+            // // Add Task Form.
+            // const Text("Add a New Task",
+            //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            // TextField(
+            //   controller: _taskNameController,
+            //   decoration: const InputDecoration(labelText: "Task Name"),
+            // ),
+            // TextField(
+            //   controller: _taskTimeLengthController,
+            //   decoration: const InputDecoration(
+            //       labelText: "Time Length (e.g. 2 hours)"),
+            // ),
+            // const SizedBox(height: 8),
+            // Row(
+            //   children: [
+            //     const Text("Status: "),
+            //     DropdownButton<TaskStatus>(
+            //       value: _newTaskStatus,
+            //       onChanged: (val) {
+            //         if (val == null) return;
+            //         setState(() {
+            //           _newTaskStatus = val;
+            //         });
+            //       },
+            //       items: TaskStatus.values.map((status) {
+            //         return DropdownMenuItem(
+            //             value: status, child: Text(status.label));
+            //       }).toList(),
+            //     ),
+            //     const Spacer(),
+            //     ElevatedButton(
+            //       onPressed: _addTask,
+            //       style: ElevatedButton.styleFrom(
+            //         backgroundColor: const Color.fromARGB(255, 76, 111, 104),
+            //       ),
+            //       child: const Text("Add Task",
+            //           style: TextStyle(color: Colors.white)),
+            //     ),
+            //   ],
+            // ),
+            // const SizedBox(height: 24),
 
-            // Existing Tasks List.
-            const Text("Existing Tasks",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const Divider(),
-            _tasks.isEmpty
-                ? const Text("No tasks yet.")
-                : Column(
-                    children: List.generate(_tasks.length, (index) {
-                      final task = _tasks[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        child: ListTile(
-                          title: Text(
-                            "${task.name} (${task.timeLength})",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              decoration: task.status == TaskStatus.finished
-                                  ? TextDecoration.lineThrough
-                                  : TextDecoration.none,
-                            ),
-                          ),
-                          subtitle: Text("Status: ${task.status.label}"),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              DropdownButton<TaskStatus>(
-                                value: task.status,
-                                onChanged: (val) =>
-                                    _updateTaskStatus(index, val!),
-                                items: TaskStatus.values.map((s) {
-                                  return DropdownMenuItem(
-                                      value: s, child: Text(s.label));
-                                }).toList(),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _removeTask(index),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
+            // // Existing Tasks List.
+            // const Text("Existing Tasks",
+            //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            // const Divider(),
+            // _tasks.isEmpty
+            //     ? const Text("No tasks yet.")
+            //     : Column(
+            //         children: List.generate(_tasks.length, (index) {
+            //           final task = _tasks[index];
+            //           return Card(
+            //             margin: const EdgeInsets.symmetric(vertical: 6),
+            //             child: ListTile(
+            //               title: Text(
+            //                 "${task.name} (${task.timeLength})",
+            //                 style: TextStyle(
+            //                   fontWeight: FontWeight.bold,
+            //                   decoration: task.status == TaskStatus.finished
+            //                       ? TextDecoration.lineThrough
+            //                       : TextDecoration.none,
+            //                 ),
+            //               ),
+            //               subtitle: Text("Status: ${task.status.label}"),
+            //               trailing: Row(
+            //                 mainAxisSize: MainAxisSize.min,
+            //                 children: [
+            //                   DropdownButton<TaskStatus>(
+            //                     value: task.status,
+            //                     onChanged: (val) =>
+            //                         _updateTaskStatus(index, val!),
+            //                     items: TaskStatus.values.map((s) {
+            //                       return DropdownMenuItem(
+            //                           value: s, child: Text(s.label));
+            //                     }).toList(),
+            //                   ),
+            //                   const SizedBox(width: 8),
+            //                   IconButton(
+            //                     icon:
+            //                         const Icon(Icons.delete, color: Colors.red),
+            //                     onPressed: () => _removeTask(index),
+            //                   ),
+            //                 ],
+            //               ),
+            //             ),
+            //           );
+            //         }),
+            //       ),
           ],
         ),
       ),

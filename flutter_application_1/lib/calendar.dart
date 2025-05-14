@@ -21,13 +21,13 @@ class _FourthRouteState extends State<FourthRoute> {
   Widget build(BuildContext context) {
     final tasks = context.watch<TaskProvider>().tasks;
 
-    List<Task> _getTasksForDay(DateTime? day) {
+    List<Task> getTasksForDay(DateTime? day) {
       return tasks.where((task) {
         if (task.dueDate == null) return false;
         return isSameDay(task.dueDate!, day);
       }).toList();
     }
-    final tasksForSelectedDay = _getTasksForDay(_selectedDay);
+    final tasksForSelectedDay = getTasksForDay(_selectedDay);
 
     return Scaffold(
       appBar: AppBar(
@@ -50,7 +50,7 @@ class _FourthRouteState extends State<FourthRoute> {
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
             },
-            eventLoader: _getTasksForDay,
+            eventLoader: getTasksForDay,
             calendarStyle: const CalendarStyle(
               markerDecoration: BoxDecoration(
                 color: Color.fromARGB(255, 243, 166, 33),

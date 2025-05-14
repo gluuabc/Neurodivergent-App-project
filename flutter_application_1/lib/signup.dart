@@ -19,8 +19,9 @@ class SignUpPage extends StatelessWidget {
                   TitleSection(
                     name: 'Sign Up',
                     input1: 'Email',
-                    input2: 'Username',
-                    input3: 'Password',
+                    input2: 'Name',
+                    input3: 'Username',
+                    input4: 'Password',
                   ),
                   SignUpButton(),
                 ],
@@ -54,12 +55,14 @@ class TitleSection extends StatefulWidget {
     required this.input1,
     required this.input2,
     required this.input3,
+    required this.input4,
   });
 
   final String name;
   final String input1;
   final String input2;
   final String input3;
+  final String input4;
 
   @override
   State<TitleSection> createState() => _TitleSectionState();
@@ -110,13 +113,28 @@ class _TitleSectionState extends State<TitleSection> {
           const SizedBox(height: 8),
           const TextField(
             decoration: InputDecoration(
-              hintText: 'Enter username here',
+              hintText: 'Enter name here',
               border: OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 20),
           Text(
             widget.input3,
+            style: const TextStyle(
+              fontSize: 24, // Larger than default but smaller than name
+              color: Color.fromARGB(255, 76, 111, 104),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const TextField(
+            decoration: InputDecoration(
+              hintText: 'Enter username here',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            widget.input4,
             style: const TextStyle(
               fontSize: 24, // Larger than default but smaller than name
               color: Color.fromARGB(255, 76, 111, 104),

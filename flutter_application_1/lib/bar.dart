@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'setting.dart';
-import 'timer1.dart';
+import 'settings.dart';
+import 'pomodoro.dart';
+// import 'timer1.dart';
 import 'home.dart';
 import 'calendar.dart';
 import 'list.dart';
@@ -11,54 +12,30 @@ class CustomBottomBar extends StatelessWidget {
   final int currentIndex;
 
   void _onItemTapped(BuildContext context, int index) {
-    if (index == currentIndex) return; // Do nothing if already on the selected page
+    if (index == currentIndex) return;
 
-    switch (index) {
-      case 0:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const FirstRoute(
-              appTitle: 'Neurodivergent App',
-              name: 'Timer Track',
-            ),
-          ),
-        );
-        break;
-      case 1:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const SecondRoute(appTitle: 'Neurodivergent App'),
-          ),
-        );
-        break;
-      case 2:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const ThirdRoute(appTitle: 'Neurodivergent App'),
-          ),
-        );
-        break;
-      case 3:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const FourthRoute(appTitle: 'Neurodivergent App'),
-          ),
-        );
-        break;
-      case 4:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const FifthRoute(appTitle: 'Neurodivergent App'),
-          ),
-        );
-        break;
-    }
+    final pages = [
+      const PomodoroRoute(appTitle: 'Neurodivergent App'),
+      const SecondRoute(appTitle: 'Neurodivergent App'),
+      const ThirdRoute(appTitle: 'Neurodivergent App'),
+      const FourthRoute(appTitle: 'Neurodivergent App'),
+      const FifthRoute(appTitle: 'Neurodivergent App'),
+    ];
+    // const FirstRoute(appTitle: 'Neurodivergent App', name: 'Timer Track'),
+
+    if (index < 0 || index >= pages.length) return;
+
+    final newPage = pages[index];
+
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => newPage,
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {
